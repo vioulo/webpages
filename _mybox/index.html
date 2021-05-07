@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>my box</title>
+        <script src="./public/js/jquery-2.1.4.min.js"></script>
+        <!--我感觉自己要做成一件事情，但还不清楚是什么-->
+        <style>
+            *
+            {
+                font-family: 'heiti';
+                /*Cambria, Georgia  ThirstyRoughBolTwo*/
+                /*Averia Sans Libre,Arial,freesans,clean,sans-serif*/
+            }
+            body
+            {
+                /*background: url('./images/b18.jpg');*/
+                /*background: url('./images/b2.gif');*/
+                /*background: url('./images/b12.gif');*/
+                background: url('./images/b16.gif');
+            }
+            a
+            {
+                text-decoration: none;
+            }
+
+            a:link, a:visited
+            {
+                color:#000;
+            }
+
+            a:hover, a:active
+            {
+                color:#000;
+            }
+
+            .main
+            {
+                /*未知宽高的容器的水平垂直方向居中*/
+                width: 455px;
+                height: 570px;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%,-50%);
+                box-shadow: rgba(100, 100, 100, .4) 2px 2px 5px 2px;
+                font-weight: bold;
+                background-color: #fffff8;
+
+                -moz-user-select: none; /*firefox*/
+                -webkit-user-select: none;/*webkit*/
+                -ms-user-select: none; /*IE 10*/
+                user-select: none;
+            }
+            .myimg
+            {
+                background: url('./images/index.jpg') no-repeat;
+                height: 455px;
+            }
+            .mytxt
+            {
+                padding-left: 10%;
+            }
+            .mytxt input
+            {
+                width: 325px;
+                margin-top: 7px;
+                margin-left: 5%;
+                border: hidden;
+            }
+            .buttons
+            {
+                margin-left: 63.5%;
+            }
+            .buttons button
+            {
+                border: 1px;
+                border-radius: 1px;
+                cursor:pointer;
+            }
+            .copy
+            {
+                margin-top: 130px;
+                text-align: center;
+                font-size: 12px;
+            }
+            .tips
+            {
+                color: #000;
+                /*background: #000;*/
+                width: 220px;
+                height: 50px;
+                position: absolute;
+                top: 80.7%;
+                left: 510px;
+            }
+            .tips span
+            {
+                display: block;
+            }
+            .tips em
+            {
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class='main'>
+
+            <div class='myimg'>
+            </div>
+
+            <div class='mytxt'>
+                <input type='text' name='uname' value='' placeholder='请键入名称' />
+                <input type='password' name='upwd' value='' placeholder='这里是密码' />
+                <p></p>
+                <span class='buttons'>
+                    <button id='join'>加入</button>
+                    <button>登录</button>
+                </span>
+            </div>
+
+            <div class='tips'>
+                <span>[ <em>请输入汉字、英文字母、数字</em> ]</span>
+                <br/>
+                <span style="margin-top:-11px;">[ <em>最少6位</em> ]</span>
+            </div>
+
+            <div class='copy'>
+                &copy; 俄而雪骤&nbsp;
+                <a href="">关于</a>
+            </div>
+
+        </div>
+
+
+
+    </body>
+    <script>
+        $('#join').click(function(){
+            alert('lol');
+        });
+    </script>
+</html>

@@ -1,0 +1,158 @@
+*, *:after, *:before {
+    box-sizing: inherit;
+}
+html {
+    box-sizing: border-box;
+    font-size: 10px;
+}
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family:"Bree Serif", Arial, sans-serif;
+    background-color: #18c;
+    background-image: linear-gradient(#26a 0%, #06a 100%);
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: #fff;
+}
+h1, h2 {
+    margin: 0 0 2rem 0;
+    padding: 2rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: pre-wrap;
+    user-select: none;
+}
+h1 {
+    font-size: 4rem;
+}
+h2 {
+    font-size: 2.6rem;
+    font-weight: 400;
+}
+button {
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    background: none;
+    border: 0;
+    outline: 0;
+    border-radius: 0.1rem;
+    font: inherit;
+    font-size: 4rem;
+    line-height: 1.6;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.25s ease;
+}
+form {
+    display: flex;
+    width: 100%;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+input[type="text"] {
+    width: 90%;
+    padding: 1rem 2rem;
+    font-size: 2.4rem;
+    background: transparent;
+    color: #eee;
+    outline: 0;
+    border: 0;
+    transition: all ease-out 0.3s;
+}
+input[type="text"]:focus {
+    color: #fff;
+}
+input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+input[type='checkbox'] {
+    appearance: none;
+    display: none;
+}
+#todo {
+    width: 40rem;
+    max-width: 90vw;
+    margin: 10rem auto;
+}
+.item {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    margin-bottom: 1.4rem;
+    font-size: 1.6rem;
+    border-radius: 2px;
+    box-shadow: 0.5rem 0.5rem 0 rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: all 0.5s ease;
+    user-select: none;
+}
+.item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+.item label {
+    width: 85%;
+    padding: 1rem 2rem;
+    font-size: 2rem;
+    line-height: 2;
+    word-break: break-word;
+    cursor: pointer;
+}
+.item.done span {
+    color: rgba(255, 255, 255, 0.6);
+    position: relative;
+}
+.item.done span::before {
+    content:'';
+    position: absolute;
+    width: 100%;
+    right: 0;
+    top: 50%;
+    border-bottom: 0.4rem solid rgba(255, 255, 255, 0.4);
+}
+form button, .item button {
+    width: 15%;
+}
+.item button {
+    line-height: 1.0;
+    opacity: 0;
+}
+.item:hover button {
+    opacity: 1;
+}
+.slide-enter-active, .slide-leave-active {
+    transition: all 0.5s ease;
+}
+.slide-enter, .slide-leave-to {
+    opacity: 0;
+}
+.slide-enter-active {
+    animation: slide-in 0.5s ease-out;
+}
+.slide-leave-active {
+    animation: slide-out 0.5s ease-out forwards;
+}
+@keyframes slide-in {
+    from {
+        transform: translateX(32px);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+@keyframes slide-out {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(32px);
+    }
+}

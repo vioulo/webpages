@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>ff</title>
+	<style type="text/css">
+		
+		* {
+
+			padding: 0;
+			margin: 0;
+		}
+
+		.box {
+
+			display: grid;
+			width: 2000px;
+			height: 2000px;
+			grid-template-columns: repeat(100, 1fr);
+		}
+
+		.lit {
+
+			width: 20px;
+			height: 20px;
+			margin-left: 1px;
+			margin-bottom: 1px;
+			border-radius: 10px;
+			background: #ececec;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body>
+
+	<div class="box"></div>
+</body>
+<script type="text/javascript" src="jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+
+	function drow() {
+
+		var w = h = 2000;
+
+		var count = (w / 20) * (h / 20);
+		var boxx = `<div class="lit" pot="no"></div>`;
+
+		for (let i = 0; i < count; i ++) {
+		
+			$('.box').append(boxx);
+		}
+	}
+
+	drow();
+
+	$('.lit').on('click', function() {
+
+		let pot = $(this).attr('pot');
+		if (pot == 'no') {
+		
+			$(this).attr('pot', 'yes');
+			$(this).css('background', '#28a745');
+
+		} else {
+
+			$(this).attr('pot', 'yes');
+			$(this).css('background', '#ececec');
+		}
+	});
+
+</script>
+</html>

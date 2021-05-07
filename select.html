@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>select</title>
+	<style type="text/css">
+		* {
+
+			margin: 0;
+			padding: 0;
+			font-size: 14px;
+		}
+		.select_cust {
+
+			width: 100px;
+			margin: 2rem auto;
+			position: relative;
+		}
+		.btn {
+
+			display: flex;
+		}
+		.content,.action {
+
+			display: inline-block;
+			border: 1px solid #ccc;
+			cursor: pointer;
+			user-select: none;
+		}
+		.content {
+			
+			width: 50px;
+			padding: 0.1rem 0.6rem;
+			background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+
+			border-right: none;
+			border-radius: 4px 0 0 4px;
+		}
+		.action {
+
+			padding: 0.1rem 0.5rem;
+			background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%);
+
+			border-radius: 0 4px 4px 0;
+		}
+		.content:active, .action:active {
+
+			background-color: #e0e0e0;
+			border-color: #dbdbdb;
+			box-shadow: inset 0 3px 5px rgba(0, 0, 0, .125);
+		}
+		.select_options {
+
+			width: 96px;
+			position: absolute;
+			margin-top: 2px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			background: #fff;
+			box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+			z-index: 1000;
+		}
+		.select_options li {
+
+			padding: 2px 0.92rem;
+			list-style: none;
+			cursor: pointer;
+		}
+		.select_options li:hover {
+
+			background: linear-gradient(to bottom, #eee 0%, #e0e0e0 100%);
+		}
+		.select_options_ed {
+
+			background: linear-gradient(to bottom, #eee 0%, #e0e0e0 100%);
+		}
+	</style>
+</head>
+<body>
+
+	<div class="select_cust">
+		<div class="btn">
+			<div class="content">默认</div>
+			<div class="action">▼</div>
+		</div>
+		<div class="select_options">
+			<ul>
+				<li>我是谁</li>
+				<li>我在哪</li>
+				<li>为什么</li>
+				<li>干什么</li>
+				<li>是什么</li>
+				<li>天气晴</li>
+				<li>是雨天</li>
+				<li>缺货已换货</li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

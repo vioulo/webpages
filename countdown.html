@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>countdown</title>
+</head>
+<body>
+
+    <div>
+        <span id="_d">天</span>
+        <span id="_h">时</span>
+        <span id="_m">分</span>
+        <span id="_s">秒</span>
+    </div>
+</body>
+<script type="text/javascript">
+    
+    function init_down(day) {
+
+        let date = new Date();
+        let now  = date.getTime();
+
+        let leftime = day * 24 * 60 * 60 * 1000
+        let future  = now + leftime;
+
+        let storage = window.localStorage;
+
+        if (!storage.future || storage.future === 0) {
+
+            storage.future = future;
+        } else {
+
+            let leftime_ = storage.future - now;
+            if (leftime_ > 0) {
+
+                leftime = leftime_;
+            } else {
+                
+                storage.future = future;
+            }
+        }
+
+        console.log(storage.future);
+        console.log(now);
+
+        countdown(leftime);
+    }
+
+    function countdown(leftime) {
+
+        if (leftime <= 0) {
+
+            window.localStorage.future = 0;
+            return false;
+        }
+
+        let d,h,m,s;
+        
+        d = Math.floor(leftime / 1000 / 60 / 60 / 24);
+        h = Math.floor(leftime / 1000 / 60 / 60 % 24);
+        m = Math.floor(leftime / 1000 / 60 % 60);
+        s = Math.floor(leftime / 1000 % 60);
+
+        h = h < 10 ? '0' + h : h;
+        m = m < 10 ? '0' + m : m;
+        s = s < 10 ? '0' + s : s;
+
+        document.getElementById("_d").innerHTML = d + "天";
+        document.getElementById("_h").innerHTML = h + "时";
+        document.getElementById("_m").innerHTML = m + "分";
+        document.getElementById("_s").innerHTML = s + "秒";
+        
+        leftime -= 1000;
+        // setTimeout(countdown(leftime), 1000); // 这样写会：Uncaught RangeError: Maximum call stack size exceeded， 堆栈溢出，不知道为啥
+        setTimeout(function() {
+
+            countdown(leftime);
+        }, 1000);
+    }
+
+    init_down(3);
+</script>
+</html>

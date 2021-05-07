@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>page</title>
+	<style type="text/css">
+		.test {
+
+			color: #fff;
+			background: #C71D24;
+			font-size: 36px;
+		}
+	</style>
+</head>
+<body>
+
+	<input type="text" name="" id="cpage">
+	<button class="test" onclick="page_init()">TEST</button>
+</body>
+<script type="text/javascript">
+
+	// function page_init(pages, cpage) {
+	function page_init() {
+
+		pages = 50;
+		cpage = document.getElementById('cpage').value;
+
+		if (!cpage) cpage = 1;
+
+		cpage = Number(cpage);
+
+		let parr  = [];
+		let left  = (cpage - 2 > 0) ? (cpage - 2) : 1;
+		let right = (cpage + 2 < pages) ? (cpage + 2): pages-1;
+
+		let left_ = [];
+		let middle = [];
+		let right_ = [];
+
+		if (cpage < 5) {
+
+			left_ = group_arr(1, cpage + 4);
+		} else {
+
+			left_ = [1, 'xxx'];
+			middle = group_arr(left, right);
+
+		}
+
+// 可以根据 left 和 right 的之来判断前后的距离
+		if (cpage < pages - 4) {
+
+			right_ = ['xxx', pages];
+		} else {
+
+			middle = [];
+			right_ = group_arr(cpage - 4, pages);
+		}
+
+console.log(left_);
+console.log(middle);
+console.log(right_);
+
+		console.log(left_.concat(middle).concat(right_));
+	}
+
+	function group_arr(a, b) {
+
+		if (a == b) return [];
+
+		let arr = [];
+
+		while(a <= b) {
+
+			arr.push(a);
+			a ++;
+		}
+
+		return arr;
+	}
+
+</script>
+</html>

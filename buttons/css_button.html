@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<style type="text/css">
+		
+		/*1*/
+		.btn {
+		    background: none;
+		    border: 2px solid;
+		    border-bottom-width: 4px;
+		    font: inherit;
+		    letter-spacing: inherit;
+		    margin: 1em;
+		    padding: 1em 2em;
+		    text-transform: inherit;
+		    -webkit-transition: color 1s;
+		    transition: color 1s;
+		}
+
+		/*.btn-1:hover {*/
+		body {
+
+		    -webkit-animation: zigzag 1s linear infinite;
+		    animation: zigzag 1s linear infinite;
+
+		    background: -webkit-linear-gradient(315deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) -0.5em 0,
+		    			-webkit-linear-gradient(225deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) -0.5em 0,
+		    			-webkit-linear-gradient(135deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) 0 0,
+		    			-webkit-linear-gradient(45deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) 0 0;
+
+		    background: linear-gradient(135deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) -0.5em 0,
+		    			linear-gradient(225deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) -0.5em 0,
+		    			linear-gradient(315deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) 0 0,
+		    			linear-gradient(45deg, rgba(238, 161, 99, 0.25) 0.25em, transparent 0.25em) 0 0;
+
+		    background-size: 0.75em 0.75em;
+		    color: #63b0ee;
+		}
+		
+		@-webkit-keyframes zigzag {
+		  100% {
+		    background-position: 1em 0, 1em 0, -0.75em 0 , -0.75em 0;
+		  }
+		}
+
+		@keyframes zigzag {
+		  100% {
+		    background-position: 1em 0, 1em 0, -0.75em 0 , -0.75em 0;
+		  }
+		}
+
+
+		/*2*/
+		.stripe{
+          /*position: absolute;
+          top:50%;left: 50%;
+          transform:translate(-50%,-50%);*/
+          width: 200px;line-height:200px;
+          text-align: center;
+          color: white;
+          font-size: 200%;
+          background:deeppink;
+          border-radius:.5em;
+          background:repeating-linear-gradient(45deg,#CC9999, #CC9999 15px, #CCCCCC 0, #CCCCCC 30px)
+        }
+
+       .colorful-stripe {
+          /*position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);*/
+          width: 300px;
+          line-height: 200px;
+          text-align: center;
+          color: #fff;
+          font-size: 200%;
+           border-radius: .5em;
+          background:
+          linear-gradient(limegreen, transparent), linear-gradient(90deg, skyblue, transparent), linear-gradient(-90deg, coral, transparent);
+          background-blend-mode: screen;
+        }
+      
+	</style>
+</head>
+<body>
+
+<button class="btn btn-1">hover me</button>
+<div class="stripe">ccccc</div>
+<div class="colorful-stripe">fffff</div>
+</body>
+</html>

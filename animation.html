@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title></title>
+	<style type="text/css">
+
+		.animation::after {
+			content:'';
+			display: block;
+			width:10px;
+			height:50px;
+			animation: blink 1s infinite steps(1, start)
+		}
+		@keyframes blink {
+		0%{
+			background-color: white;
+		}
+		50% {
+			background-color: black;
+		}
+		100% {
+			background-color: white;
+		}
+	</style>
+</head>
+<body>
+	<div class="animation"></div>
+</body>
+</html>

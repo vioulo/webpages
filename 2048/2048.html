@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>2048</title>
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link rel="stylesheet" type="text/css" href="./2048.css">
+	<script type="text/javascript" src="../jquery-3.3.1.min.js"></script>
+</head>
+<body>
+	<div class="head">
+		<div class="scroebox" style="width: 192px;">
+			<p>当前积分</p>
+			<div class="score score1">0</div>
+			<div class="markdel1"></div>
+		</div>
+		<div class="scroebox" style="width: 192px;">
+			<p>最高积分</p>
+			<div class="score score2">0</div>
+			<div class="markdel2"></div>
+		</div>
+	</div>
+	<div class="mainbox" id="slider" style="height: 480px; padding: 10px;">
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cellbg"></div>
+		<div class="cell row1 col1 left up" style="line-height: 100px;"></div>
+		<div class="cell row1 col2 up" style="line-height: 100px;"></div>
+		<div class="cell row1 col3 up step" style="line-height: 100px;"></div>
+		<div class="cell row1 col4 up right" style="line-height: 100px;"></div>
+		<div class="cell row2 col1 left" style="line-height: 100px;"></div>
+		<div class="cell row2 col2 center" style="line-height: 100px;"></div>
+		<div class="cell row2 col3 center" style="line-height: 100px;"></div>
+		<div class="cell row2 col4 right" style="line-height: 100px;"></div>
+		<div class="cell row3 col1 left" style="line-height: 100px;"></div>
+		<div class="cell row3 col2 center" style="line-height: 100px;"></div>
+		<div class="cell row3 col3 center" style="line-height: 100px;"></div>
+		<div class="cell row3 col4 right step" style="line-height: 100px;"></div>
+		<div class="cell row4 col1 left down" style="line-height: 100px;"></div>
+		<div class="cell row4 col2 down" style="line-height: 100px;"></div>
+		<div class="cell row4 col3 down" style="line-height: 100px;"></div>
+		<div class="cell row4 col4 right down" style="line-height: 100px;"></div>
+	</div>
+	<div class="manubox" style="width: 432px;">
+		<p><span class="tt">2048怎么玩？</span><br><br>
+		电脑：方向键移动;手机：手指滑动屏幕。<br>
+		得到一个“2048”就算胜利了,如果16个格子全部填满并且无法移动的话，那么gameover。</p>
+		<b class="newGame">重新开始</b>
+	</div>
+</body>
+<script src="./2048.js"></script>
+</html>

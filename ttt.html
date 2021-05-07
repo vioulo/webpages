@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+
+
+   		<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+   		<link href="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.css" rel="stylesheet">
+   		<script src="https://cdn.bootcss.com/jqueryui/1.12.1/jquery-ui.js"></script>
+
+		<style>
+			body {
+				font-family: courier new, courier;
+				font-size: 12px;
+			}
+ 
+			.draggable {
+				border: 1px solid #ccc;
+				display: inline-block;
+				cursor: move;
+				position: absolute;
+				padding: 30px;
+			}
+ 
+			.guide {
+				display: none;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+ 
+			#guide-h {
+				border-top: 1px dashed #55f;
+				width: 100%;
+			}
+ 
+			#guide-v {
+				border-left: 1px dashed #55f;
+				height: 100%;
+			}
+		</style>
+	</head>
+ 
+	<body>
+ 
+		<div class="draggable">1111111</div>
+ 
+		<div class="draggable">2222222</div>
+ 
+		<div class="draggable">3333333</div>
+ 
+		<!--拖动辅助线-->
+ 
+		<div id="guide-h" class="guide"></div>
+		<div id="guide-v" class="guide"></div>
+ 
+	</body>
+ 
+ 
+	<script>
+		//捕获的最小距离
+		var MIN_DISTANCE = 8;
+		// 没有可用的引导\导轨 
+		var guides = [];
+		var innerOffsetX, innerOffsetY;
+ 
+ 
+		$(".draggable").draggable({
+ 
+			//拖拽开始
+			start: function(event, ui) {
+				//$(".draggable").not(this) 不包过自己
+				guides = $.map($(".draggable").not(this), computeGuidesForElement);
+ 
+				//offsetX、offsetY：元素的X,Y坐标
+				innerOffsetX = event.offsetX;
+				innerOffsetY = event.offsetY;
+			},
+ 
+			//拖拽的时候
+			drag: function(event, ui) {
+				//迭代所有的guids，记住最近的h和v guids
+ 
+				
+				var guideV, guideH, distV = MIN_DISTANCE + 1,
+					distH = MIN_DISTANCE + 1,
+					offsetV, offsetH;
+ 
+				//
+				var chosenGuides = {
+					top: {
+						dist: MIN_DISTANCE + 1
+					},
+					left: {
+						dist: MIN_DISTANCE + 1
+					}
+				};
+ 
+				var $t = $(this);
+ 
+ 
+				var pos = {
+					top: event.pageY - innerOffsetY,
+					left: event.pageX - innerOffsetX
+				};
+ 
+				//元素的宽。包含 padding 和 border
+				var w = $t.outerWidth() - 1;
+				var h = $t.outerHeight() - 1;
+ 
+				
+				var elemGuides = computeGuidesForElement(null, pos, w, h);
+ 
+	
+				$.each(guides, function(i, guide) {
+					
+					$.each(elemGuides, function(i, elemGuide) {
+						
+						if (guide.type == elemGuide.type) {
+							
+							var prop = guide.type == "h" ? "top" : "left";
+							//abs=绝对值
+							var d = Math.abs(elemGuide[prop] - guide[prop]);
+							
+							if (d < chosenGuides[prop].dist) {
+								
+								chosenGuides[prop].dist = d;
+								
+								chosenGuides[prop].offset = elemGuide[prop] - pos[prop];
+								//
+								chosenGuides[prop].guide = guide;
+							}
+						}
+					});
+				});
+ 
+				if (chosenGuides.top.dist <= MIN_DISTANCE) {
+					$("#guide-h").css("top", chosenGuides.top.guide.top).show();
+					ui.position.top = chosenGuides.top.guide.top - chosenGuides.top.offset;
+				} else {
+					$("#guide-h").hide();
+					ui.position.top = pos.top;
+				}
+ 
+				if (chosenGuides.left.dist <= MIN_DISTANCE) {
+					$("#guide-v").css("left", chosenGuides.left.guide.left).show();
+					ui.position.left = chosenGuides.left.guide.left - chosenGuides.left.offset;
+				} else {
+					$("#guide-v").hide();
+					ui.position.left = pos.left;
+				}
+ 
+			},
+ 
+			stop: function(event, ui) {
+				$("#guide-v, #guide-h").hide();
+			}
+ 
+		});
+ 
+ 
+		//计算元素导轨
+		function computeGuidesForElement(elem, pos, w, h) {
+			//debugger
+			if (elem != null) {
+				var $t = $(elem);
+				//返回当前元素的偏移量,X Y 轴坐标
+				pos = $t.offset();
+				//元素的宽
+				w = $t.outerWidth() - 1;
+				//元素的高
+				h = $t.outerHeight() - 1;
+			}
+ 
+			//盒子和点位的关系
+			//1----2
+			// |  |
+			//3----4
+			//H(水平)V(垂直)
+ 
+			let app = [
+				//1号位置
+				{
+					type: "h",
+					left: pos.left,
+					top: pos.top
+				},
+				//3号位置
+				{
+					type: "h",
+					left: pos.left,
+					top: pos.top + h
+				},
+				//1号位置
+				{
+					type: "v",
+					left: pos.left,
+					top: pos.top
+				},
+				//2号位置
+				{
+					type: "v",
+					left: pos.left + w,
+					top: pos.top
+				},
+				//1号3号中间
+				{
+					type: "h",
+					left: pos.left,
+					top: pos.top + h / 2
+				},
+				//1号2号中间
+				{
+					type: "v",
+					left: pos.left + w / 2,
+					top: pos.top
+				}
+			];
+ 
+			return app;
+		}
+ 
+ 
+        $(".draggable").resizable({
+			// 停止缩放后执行
+			stop: function() {
+				// 获取元素当前位置
+				let div = {
+					top: parseInt($(this).css('top')),
+					left: parseInt($(this).css('left')),
+					width: parseInt($(this).css('width')),
+					height: parseInt($(this).css('height')),
+					key: $(this).html(),
+				}
+				that.updateStyle(div);
+			}
+		});
+	</script>
+ 
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>jQuery无缝滑动轮播插件</title>
+<style>
+		body{background-color: #EBEBEB}
+		.pi,.pi1, .pi2 {
+			width: 600px;
+			height:300px;
+			margin:0 auto;
+		}
+
+    </style>
+</head>
+<body>
+<h3 style="text-align: center;margin: 20px 0;">淡出淡入</h3>
+<div class="pi">
+
+<div class="pike">
+<div>
+<img src="img/jq22-1.png" alt="">
+</div>
+<div>
+<img src="img/jq22-2.png" alt="">
+</div>
+<div>
+<img src="img/jq22-3.png" alt="">
+</div>
+<div>
+<img src="img/jq22-4.png" alt="">
+</div>
+</div>
+
+<div class="pike_prev"></div>
+
+<div class="pike_next"></div>
+
+<div class="pike_spot"></div>
+</div>
+<br>
+<h3 style="text-align: center;margin: 20px 0;">左右滑动</h3>
+<div class="pi1">
+
+<div class="pike">
+<div>
+<img src="img/jq22-4.png" alt="">
+</div>
+<div>
+<img src="img/jq22-3.png" alt="">
+</div>
+<div>
+<img src="img/jq22-2.png" alt="">
+</div>
+<div>
+<img src="img/jq22-1.png" alt="">
+</div>
+</div>
+
+<div class="pike_prev"></div>
+
+<div class="pike_next"></div>
+
+<div class="pike_spot"></div>
+</div>
+<h3 style="text-align: center;margin: 20px 0;">上下滑动</h3>
+<div class="pi2">
+
+<div class="pike">
+<div>
+<img src="img/jq22-3.png" alt="">
+</div>
+<div>
+<img src="img/jq22-2.png" alt="">
+</div>
+<div>
+<img src="img/jq22-1.png" alt="">
+</div>
+<div>
+<img src="img/jq22-4.png" alt="">
+</div>
+</div>
+
+<div class="pike_spot"></div>
+</div>
+<script src="https://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="pike.min.js"></script>
+<script>
+       var myPi = new Pike(".pi", {
+	       	type: 1, // 轮播的类型(1渐隐)
+	       	automatic: true, //是否自动轮播 (默认false)
+	       	autoplay: 2000, //自动轮播毫秒 (默认3000)
+	       	hover: true, //鼠标悬停轮播 (默认false)
+	       	arrowColor: "yellow", //箭头颜色 (默认绿色)
+	       	arrowBackgroundType: 2, //箭头背景类型 (1: 方形, 2:圆形)
+	       	arrowBackground: 1, //箭头背景色 (1:白色,2:黑色, 默认:无颜色)
+	       	arrowTransparent: 0.2, //箭头背景透明度 (默认: 0.5)
+       		spotColor: "white",//圆点颜色 (默认: 白色)
+       		spotType: 1, //圆点的形状 (默认: 圆形, 1:圆形, 2.矩形)
+       		spotSelectColor: "red", //圆点选中颜色 (默认绿色)
+       		spotTransparent: 0.8, //圆点透明度 (默认0.8)
+       		mousewheel: true, //是否开启鼠标滚动轮播(默认false)
+       		drag: false, //是否开启鼠标拖动 (默认为: true, 如不需要拖动设置false即可)
+       		loop: true, //是否循环轮播 (默认为: false)
+       });
+
+       var myPi1 = new Pike(".pi1", {
+   			// automatic: true, //是否自动轮播 (默认false)
+	       	type: 2, // 轮播的类型(2左右滑动)
+	       	slide: 500, //轮播滑动的速度(默认800)
+	       	autoplay: 2000, //自动轮播毫秒 (默认3000)
+	       	hover: true, //鼠标悬停轮播 (默认false)
+	       	arrowList: { //自定义箭头图片
+	       		left: "img/left.png",
+	       		right: "img/right.png",
+	       		width: 70, //如果不设置宽高,则按照图片默认宽高显示
+	       		height: 70,
+	       	},
+	       	spotList: { //自定义圆点
+	       		width: 12, //宽
+	       		height: 12, //高
+	       		borderRadius: 50, //圆角边框
+	       		opacity: 0.6,//透明度
+	       		color: "white",//颜色
+	       		select: { //自定义圆点选中样式
+	       			width: 18, //宽
+	       			borderRadius: 50, //圆角边框
+	       			height: 18, //高
+	       			color: "blue",
+	       			backgroundImg: "img/haha.png"
+	       		}
+	       	},
+	       	mousewheel: true, //是否开启鼠标滚动轮播(默认false)
+	       	// loop: true, //是否循环轮播 (默认为: false)
+	       	spotDirection: "bottom", //圆点的方向(left:左, right:右, top:上, bottom:下, 默认:bottom)
+       });
+
+       var myPi2 = new Pike(".pi2", {
+	       	type: 3, // 轮播的类型(3上下滑动)
+	       	slide: 500, //轮播滑动的速度(默认800)
+	       	// automatic: true, //是否自动轮播 (默认false)
+	       	autoplay: 2000, //自动轮播毫秒 (默认3000)
+	       	hover: true, //鼠标悬停轮播 (默认false)
+	       	arrowColor: "white", //箭头颜色 (默认绿色)
+	       	arrowBackground: 2, //箭头背景色 (1:白色,2:黑色, 默认:无颜色)
+	       	spotList: { //自定义圆点
+	       		width: 20, //宽
+	       		height: 20, //高
+	       		borderRadius: 50, //圆角边框
+	       		opacity: 0.8,//透明度
+	       		color: "white",//颜色
+	       		backgroundImg: "img/red.png",
+	       		select: { //自定义圆点选中样式
+	       			width: 20, //宽
+	       			borderRadius: 50, //圆角边框
+	       			height: 20, //高
+	       			color: "red",
+	       			backgroundImg: "img/blue.png", //图片
+	       		}
+	       	},
+	       	spotDirection: "right", //圆点的方向(left:左, right:右, top:上, bottom:下, 默认:bottom)
+	       	mousewheel: true, //是否开启鼠标滚动轮播(默认false)
+	       	// loop: true, //是否循环轮播 (默认为: false)
+       });
+
+    
+    </script>
+</body>
+</html>

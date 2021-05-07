@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+	<title>index</title>
+	<style type="text/css">
+		
+		* {
+
+			margin: 0;
+			padding: 0;
+			font-size: 12px;
+			/*color: #a4a4a4;*/
+		}
+
+		body {
+
+			display: flex;
+			flex-direction: column;
+			min-width: 340px;
+		}
+
+		header {
+
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			/*position: fixed;*/
+			width: 100%;
+			height: 3.6rem;
+			background: #4b4b4b;
+			/*opacity: 0.9;*/
+			color: #fff;
+			user-select: none;
+			-moz-user-select: none;
+		}
+
+		header .con {
+
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 72%;
+
+		}
+
+		.logo {
+
+			font-size: 1.5em;
+			letter-spacing: 0.2rem;
+		}
+
+		topr {
+
+			cursor: pointer;
+		}
+
+		.toolbar {
+
+			display: none;
+			position: relative;
+			margin-top: 0.6rem;
+			width: 3rem;
+			color: #4b4b4b;
+		}
+		.toolbar ul {
+
+			list-style: none;
+			line-height: 1.5rem;
+			letter-spacing: 0.2rem;
+		}
+
+		.toolbar li {
+
+			cursor: pointer;
+		}
+
+		.main {
+
+			width: 72%;
+			display: flex;
+			align-self: center;
+			margin-top: 2rem;
+		}
+
+		.box {
+
+			width: 80%;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.b-group {
+
+			width: 20%;
+			display: flex;
+			flex-direction: column;
+			/*background: #d6f6a6;*/
+		}
+
+		@media screen and (max-width: 860px) {
+
+		    .b-group {
+
+		    	display: none;
+		    }
+
+		    .box {
+
+		    	width: 100%;
+		    }
+		}
+
+		.list {
+
+			min-height: 4rem;
+			display: flex;
+			flex-direction: column;
+			background: #ffeeff;
+			border: 1px dashed #000;
+			margin-bottom: 2rem;
+			padding: 1rem 2rem;
+		}
+
+		.content {
+
+		}
+
+		.label {
+
+			margin-top: 1rem;
+		}
+
+		.label label {
+
+			margin-right: 0.5rem;
+			cursor: pointer;
+		}
+
+		.time {
+
+			margin-top: 0.5rem;
+		}
+
+		.time label {
+
+			margin-right: 0.5rem;
+		}
+
+		.a-right {
+
+			/*display: flex;
+			align-self: center;*/
+			text-decoration: none;
+			text-align: center;
+
+			
+			height: 2.6rem;
+		    line-height: 2.6rem;
+		    
+			padding: 0 1rem;
+			margin: 0;
+			margin-left: 2rem;
+
+		}
+
+		.new-post {
+
+			font-size: 1.2rem;
+
+		    color: #ffffff;
+		    box-shadow: 0 2px 7px 0 rgba(240,135,0,0.63);
+		    background: #f08700;
+		    border: 1px solid #e16f7c;
+		    white-space: nowrap;
+		    cursor: pointer;
+
+		}
+
+		.new-post:hover:not([disabled]) {
+		
+		    border: solid 1px #00b1e8;
+		    background: #3ec7e0;
+		    
+		    box-shadow: 0 2px 7px 0 #3ec7e0;
+		}
+
+		/*20180911*/
+		.more-and-tip {
+
+			display: flex;
+			height: 3rem;
+			margin-bottom: 1rem;
+			align-items: center;
+			justify-content: center;
+			background: #cccccc59;
+			font-size: 1.1rem;
+		}
+
+		.bottom {
+
+			height: 2rem;
+		}
+	</style>
+
+</head>
+<body>
+
+	<header>
+		<div class="con">
+			<div class="logo">俄而雪骤</div>
+			<nav>
+				<topr>
+					<join onclick="location.href='/join'">加入我们 :）</join>
+
+				</topr>
+			</nav>
+		</div>
+	</header>
+	<div class="toolbar" sts="off">
+		<ul>
+			<li>设置</li>
+			<li id="logout">退出</li>
+		</ul>
+	</div>
+
+	<div class="main">
+		<div class="box">
+			<div class="box-min">
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+				<div class="list">
+					<div class="content">这是一个真实的故事，它发生在1998的夏天，那时我还只是个孩子，但是经历了最让人难忘的时光</div>
+					<div class="label">
+						<label>#怀旧</label>
+						<label>#童年</label>
+						<label>#美好</label>
+						<label>#记忆</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>赞赏 555</label>
+						<label>公开/隐藏</label>
+					</div>
+					<div class="time">
+						<label title="源时间：2018-07-19 10:43:20">2018-07-19 10:43:20</label>
+						<label>jasper</label>
+						<label>赞赏 555</label>
+					</div>
+				</div>
+			</div>
+			
+			<div class="more-and-tip">
+				点击继续加载！
+			</div>
+		</div>
+		<div class="b-group">
+			<a class="a-right new-post" >发布新内容</a>
+			<a class="a-right" style="margin-top: 2rem;" href="" >矢量人生</a>
+			<a class="a-right" href="" >关于网站</a>
+			<a class="a-right" href="" >意见反馈</a>
+			<a class="a-right" >&copy;俄而雪骤</a>
+
+		</div>
+	</div>
+
+	<div class="bottom"></div>
+
+</body>
+</html>

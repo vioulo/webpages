@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Vue TODO</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="todo">
+        <h1>[  Todo list  ]</h1>
+        <form @submit.prevent="addItem">
+            <input type="text" id="new-todo" v-model="newTodo" placeholder="Have something to do?" autocomplete="off"/>
+            <button type="submit">+</button>
+        </form>
+        <transition-group name="slide" tag="div" class="todos">
+            <div v-for="(item, idx) in todos" class="item" :class="{done: item.done}" :key="item.id">
+                <label>
+                    <input type="checkbox" v-model="item.done"/>
+                    <span>{{item.text}}</span>
+                </label>
+                <button type="button" @click="removeItem(idx)">&times;</button>
+            </div>
+        </transition-group>  
+        <h2 v-if="todos.length === 0">Nothing to do for today!</h2>
+    </div>
+</body>
+<script src='https://cdn.bootcss.com/vue/2.6.10/vue.min.js'></script>
+<script  src="js/index.js"></script>
+</html>
