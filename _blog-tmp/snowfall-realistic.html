@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D 雪花 · 漏斗流场风迹版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            overflow: hidden;
+            background: radial-gradient(ellipse at 50% 40%, #1a253a 0%, #0a1120 65%, #03070e 100%);
+            height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        canvas { display: block; position: fixed; top: 0; left: 0; }
+        .tip {
+            position: fixed;
+            bottom: 26px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            pointer-events: none;
+            user-select: none;
+            transition: opacity 0.5s ease;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+        .tip.hidden { opacity: 0; }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
+    <div class="tip">🖱️ 长按屏幕 · 感受漏斗气流的曲线风痕</div>
+
+    <script>
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        const tipEl = document.querySelector('.tip');
+
+        let W, H, CX, CY;
+        const FL = 650;          // 镜头焦距
+        const Z_NEAR = 40;       // 最近裁剪面（贴脸）
+        const Z_FAR = 1100;      // 最远生成面（天际线）
+        const Z_WAIST = 380;     // 🌪️ 漏斗颈部位置（收敛转扩散的拐点）
+        const COUNT = 600;       // 粒子总数
+        const TRAIL_RATE = 0.25; // 携带风迹的比例
+        const TRAIL_LEN = 13;    // 风迹历史长度
+
+        let flakes = [];
+        let isPressed = false;
+        let rushVel = 0;
+        let lastTime = 0;
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            W = window.innerWidth; H = window.innerHeight;
+            CX = W / 2; CY = H / 2;
+            canvas.width = W * dpr; canvas.height = H * dpr;
+            canvas.style.width = `${W}px`; canvas.style.height = `${H}px`;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Flake {
+            constructor(index) {
+                this.id = index;
+                this.reset(false, true);
+            }
+
+            reset(pressing, initial = false) {
+                this.r = 1.5 + Math.random() * 2.5;
+                this.swayP = Math.random() * Math.PI * 2;
+                this.trail = [];
+                this.hasTrail = Math.random() < TRAIL_RATE;
+
+                // 侧向速度初始化
+                this.vx = 0;
+                this.vy = 0;
+
+                if (pressing) {
+                    this.z = Z_FAR + Math.random() * 200;
+                    const s = FL / this.z;
+                    // 初始分布稍宽，便于观察收敛过程
+                    this.x = (Math.random() - 0.5) * W * 3.0 / s;
+                    this.y = (Math.random() - 0.5) * H * 2.8 / s;
+                    this.baseVY = 0.4;
+                } else {
+                    this.z = Z_FAR * (0.3 + Math.random() * 0.7);
+                    const s = FL / this.z;
+                    this.x = (Math.random() * W - CX) / s;
+                    this.y = (-60 - Math.random() * 200 - CY) / s;
+                    this.baseVY = 1.2 + Math.random() * 0.5;
+                }
+
+                if (initial) {
+                    this.z = Z_NEAR + (this.id / COUNT) * (Z_FAR - Z_NEAR);
+                    const s = FL / this.z;
+                    this.x = (Math.random() * W - CX) / s;
+                    this.y = (Math.random() * H - CY) / s;
+                    this.baseVY = 1.2 + Math.random() * 0.5;
+                }
+            }
+
+            update(dt, pressing) {
+                // Z轴推进速度平滑过渡
+                rushVel += ((pressing ? -9.5 : 0) - rushVel) * 0.06;
+                const rushT = Math.min(1, Math.abs(rushVel) / 6.0); // 0~1 推进强度
+
+                // 🌪️ 流场核心：双喇叭口矢量场
+                if (pressing && rushT > 0.05) {
+                    const dx = this.x;
+                    const dy = this.y;
+                    const dist2 = dx * dx + dy * dy;
+                    const dist = Math.sqrt(dist2) || 1;
+                    const nx = dx / dist; // 径向单位向量 X
+                    const ny = dy / dist; // 径向单位向量 Y
+
+                    // 计算漏斗力：远端收敛(-)，近端扩散(+)
+                    let funnelForce;
+                    if (this.z > Z_WAIST) {
+                        // 后喇叭口：向中心轴收缩
+                        funnelForce = -0.00009 * (this.z - Z_WAIST);
+                    } else {
+                        // 前喇叭口：过颈部后向外猛烈扩散（扑面感）
+                        funnelForce = 0.00035 * (Z_WAIST - this.z);
+                    }
+
+                    // 应用流场加速度
+                    this.vx += nx * funnelForce;
+                    this.vy += ny * funnelForce;
+
+                    // 💨 湍流扰动：打破数学规整性，模拟真实气流微涡
+                    const turb = 0.14 * rushT;
+                    this.vx += Math.sin(this.swayP + performance.now() * 0.0035) * turb;
+                    this.vy += Math.cos(this.swayP * 1.2 + performance.now() * 0.0028) * turb;
+
+                    // 空气阻力（保证曲线平滑不震荡）
+                    this.vx *= 0.92;
+                    this.vy *= 0.92;
+                } else {
+                    // 🍂 未点击：宁静飘落，移除风速，仅保留极微弱环境漂移
+                    this.vx *= 0.94;
+                    this.vy *= 0.94;
+                    this.vx += Math.sin(this.swayP + performance.now() * 0.0004) * 0.015;
+                    this.vy += Math.cos(this.swayP + performance.now() * 0.0005) * 0.008;
+                }
+
+                // 更新 3D 位置
+                this.x += this.vx;
+                this.y += this.baseVY + this.vy;
+                this.z += rushVel;
+
+                // 📐 透视投影
+                const scale = FL / this.z;
+                this.sx = CX + this.x * scale;
+                this.sy = CY + this.y * scale;
+                this.sz = this.r * scale;
+
+                // 📏 记录风迹坐标
+                if (this.hasTrail) {
+                    this.trail.unshift({x: this.sx, y: this.sy});
+                    if (this.trail.length > TRAIL_LEN) this.trail.pop();
+                }
+
+                // 👁️ 深度透明度
+                const depthT = Math.max(0, Math.min(1, (Z_FAR - this.z) / (Z_FAR - Z_NEAR)));
+                this.alpha = depthT * 0.9;
+                if (this.z < Z_NEAR * 2.2) this.alpha *= Math.max(0, (this.z - Z_NEAR) / (Z_NEAR * 1.2));
+
+                // 🔄 智能回收
+                let recycle = false;
+                if (pressing) {
+                    if (this.z <= Z_NEAR || this.sx < -400 || this.sx > W + 400 || this.sy < -400 || this.sy > H + 400) recycle = true;
+                } else {
+                    if (this.sy > H + this.sz + 50 || this.sx < -200 || this.sx > W + 200) recycle = true;
+                }
+                if (recycle) this.reset(pressing, false);
+            }
+
+            draw() {
+                if (this.alpha <= 0.01 || this.sx < -this.sz || this.sx > W + this.sz ||
+                    this.sy < -this.sz || this.sy > H + this.sz) return;
+
+                // 💨 绘制曲线风迹
+                if (this.hasTrail && this.trail.length > 3 && Math.abs(rushVel) > 1.5) {
+                    const intensity = Math.min(1, Math.abs(rushVel) / 7.0);
+                    const baseAlpha = this.alpha * intensity * 0.75;
+                    const outerWidth = Math.max(1.6, this.sz * 0.2);
+                    const innerWidth = Math.max(0.5, this.sz * 0.05);
+
+                    const drawSmoothTrail = (width, color) => {
+                        ctx.beginPath();
+                        ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                        for (let i = 0; i < this.trail.length - 1; i++) {
+                            const p1 = this.trail[i];
+                            const p2 = this.trail[i+1];
+                            const mx = (p1.x + p2.x) / 2;
+                            const my = (p1.y + p2.y) / 2;
+                            ctx.quadraticCurveTo(p1.x, p1.y, mx, my);
+                        }
+                        ctx.lineTo(this.trail[this.trail.length-1].x, this.trail[this.trail.length-1].y);
+                        ctx.strokeStyle = color;
+                        ctx.lineWidth = width;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        ctx.stroke();
+                    };
+
+                    // 外层冰蓝辉光 + 内层高亮芯线
+                    drawSmoothTrail(outerWidth, `rgba(150, 185, 230, ${baseAlpha * 0.4})`);
+                    drawSmoothTrail(innerWidth, `rgba(255, 255, 255, ${baseAlpha * 0.9})`);
+                }
+
+                // ❄️ 雪花本体
+                const g = ctx.createRadialGradient(this.sx, this.sy, 0, this.sx, this.sy, this.sz);
+                g.addColorStop(0, `rgba(255,255,255,${this.alpha})`);
+                g.addColorStop(0.35, `rgba(255,255,255,${this.alpha * 0.6})`);
+                g.addColorStop(1, 'rgba(255,255,255,0)');
+
+                ctx.beginPath();
+                ctx.arc(this.sx, this.sy, this.sz, 0, Math.PI * 2);
+                ctx.fillStyle = g;
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < COUNT; i++) flakes.push(new Flake(i));
+
+        function loop(now) {
+            const dt = Math.min(now - lastTime, 32);
+            lastTime = now;
+
+            ctx.clearRect(0, 0, W, H);
+            flakes.sort((a, b) => b.z - a.z);
+            ctx.globalCompositeOperation = 'lighter';
+            for (const f of flakes) {
+                f.update(dt, isPressed);
+                f.draw();
+            }
+            ctx.globalCompositeOperation = 'source-over';
+            requestAnimationFrame(loop);
+        }
+        requestAnimationFrame(loop);
+
+        function setRush(state) {
+            isPressed = state;
+            if (state) tipEl.classList.add('hidden');
+        }
+        window.addEventListener('mousedown', () => setRush(true));
+        window.addEventListener('mouseup', () => setRush(false));
+        window.addEventListener('mouseleave', () => setRush(false));
+        window.addEventListener('touchstart', (e) => { setRush(true); e.preventDefault(); }, {passive: false});
+        window.addEventListener('touchend', () => setRush(false));
+        window.addEventListener('touchcancel', () => setRush(false));
+    </script>
+</body>
+</html>

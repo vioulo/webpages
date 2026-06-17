@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VueGe - 前端开发交流平台</title>
+
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="shortcut icon" href="https://ccfd.cc/logo.svg"/>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #020617; /* 极暗的深空蓝 */
+            font-family: 'Montserrat', system-ui, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* UI 层的平滑过渡 */
+        .ui-layer {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 隐藏 UI 时的动画类 */
+        .ui-hidden {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+            filter: blur(10px);
+        }
+
+        /* 按钮光泽扫过动画 */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        /* 跳转时的全屏高光 */
+        #flash-overlay {
+            position: fixed;
+            inset: 0;
+            background: #ffffff;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-in;
+        }
+
+        .jump-flash #flash-overlay {
+            opacity: 1;
+        }
+
+        /* 标题文字的细微呼吸光感 */
+        .glow-text {
+            text-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+        }
+
+        /* 科技圆环旋转动画速度控制 */
+        .tech-ring {
+            transition: animation-duration 0.5s ease;
+        }
+
+        /* 跃迁状态下，圆环加速狂转 */
+        body.is-warping .tech-ring {
+            animation-duration: 0.3s !important;
+        }
+        body.is-charging .tech-ring {
+            animation-duration: 2s !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D 跃迁星空 Canvas -->
+    <canvas id="space-canvas" class="fixed inset-0 z-0"></canvas>
+
+    <!-- 强光闪爆层 (跳转时触发) -->
+    <div id="flash-overlay"></div>
+
+    <!-- 极简 UI 层 -->
+    <main id="ui-container" class="ui-layer relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pointer-events-none">
+
+        <!-- ================= 新增：科幻 HUD 边角框 ================= -->
+        <div class="fixed inset-4 md:inset-8 z-10 pointer-events-none opacity-40">
+            <div class="absolute top-0 left-0 w-8 h-8 md:w-12 md:h-12 border-t-2 border-l-2 border-emerald-500/50"></div>
+            <div class="absolute top-0 right-0 w-8 h-8 md:w-12 md:h-12 border-t-2 border-r-2 border-emerald-500/50"></div>
+            <div class="absolute bottom-0 left-0 w-8 h-8 md:w-12 md:h-12 border-b-2 border-l-2 border-emerald-500/50"></div>
+            <div class="absolute bottom-0 right-0 w-8 h-8 md:w-12 md:h-12 border-b-2 border-r-2 border-emerald-500/50"></div>
+        </div>
+
+        <!-- ================= 新增：底部遥测数据 ================= -->
+        <div class="fixed bottom-6 left-6 md:bottom-10 md:left-10 z-10 font-mono text-[10px] md:text-xs text-emerald-500/70 flex flex-col gap-1.5 pointer-events-none">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-emerald-500 rounded-sm animate-pulse"></div>
+                SYS_CORE: <span class="text-white">NOMINAL</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 border border-emerald-500 rounded-sm"></div>
+                WARP_DRIVE: <span class="text-emerald-300">STANDBY</span>
+            </div>
+        </div>
+
+        <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-10 font-mono text-[10px] md:text-xs text-slate-500 text-right pointer-events-none hidden sm:block">
+            <div class="mb-1">TARGET: VUEGE_NEXUS_v3</div>
+            <div>COORD: <span class="text-slate-400">45.9°N, 12.4°E</span></div>
+        </div>
+
+        <!-- ================= 核心卡片容器 ================= -->
+        <div class="pointer-events-auto flex flex-col items-center mt-[-5vh]">
+
+            <!-- Logo 与科幻辅助环 -->
+            <div class="relative w-32 h-32 mb-4 flex items-center justify-center">
+                <!-- 外层顺时针慢速虚线环 -->
+                <div class="tech-ring absolute inset-0 rounded-full border border-slate-500/30 border-dashed animate-[spin_20s_linear_infinite] scale-[1.3]"></div>
+                <!-- 内层逆时针中速虚线环 -->
+                <div class="tech-ring absolute inset-2 rounded-full border-2 border-emerald-500/20 border-dashed animate-[spin_12s_linear_infinite_reverse] scale-[1.1]"></div>
+
+                <!-- 核心 Logo -->
+                <div class="relative w-20 h-20 rounded-full bg-white/5 backdrop-blur-md border border-white/10 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <img src="https://ccfd.cc/vuege1.svg" alt="Custom Logo" class="w-10 h-10 object-contain">
+                </div>
+            </div>
+
+            <!-- 极简标题 -->
+            <h1 class="glow-text text-5xl md:text-7xl font-black text-white tracking-tighter mb-2 text-center">
+                VueGe
+            </h1>
+            <p class="text-emerald-400/80 font-bold tracking-[0.4em] uppercase text-[10px] md:text-xs mb-12 text-center flex items-center gap-4">
+                <span class="w-8 h-[1px] bg-gradient-to-r from-transparent to-emerald-500/50"></span>
+                The Frontend Universe
+                <span class="w-8 h-[1px] bg-gradient-to-l from-transparent to-emerald-500/50"></span>
+            </p>
+
+            <!-- 跃迁按钮 -->
+            <button id="engage-btn" class="relative group px-10 py-4 bg-white/5 backdrop-blur-md border border-white/20 rounded-full text-white font-bold tracking-widest overflow-hidden transition-all duration-300 hover:scale-110 hover:bg-white/10 hover:border-emerald-400 hover:text-emerald-300 hover:shadow-[0_0_50px_rgba(16,185,129,0.5)]">
+
+                <!-- 按钮背景流光特效 -->
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+
+                <span class="relative z-10 flex items-center gap-3">
+                    ENGAGE
+                    <i data-lucide="rocket" class="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1"></i>
+                </span>
+            </button>
+
+        </div>
+    </main>
+
+    <script>
+        // 1. 初始化图标
+        lucide.createIcons();
+
+        // 2. 高性能 3D 星空/跃迁 Canvas 引擎
+        const canvas = document.getElementById('space-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // 星星粒子配置
+        const numStars = window.innerWidth < 768 ? 400 : 800;
+        let stars = [];
+
+        // 速度控制
+        let currentSpeed = 1.5;
+        let targetSpeed = 1.5;
+        let warpActive = false;
+
+        class Star {
+            constructor() {
+                this.reset();
+                this.z = Math.random() * width;
+                this.pz = this.z;
+            }
+
+            reset() {
+                this.x = (Math.random() - 0.5) * width * 2;
+                this.y = (Math.random() - 0.5) * height * 2;
+                this.z = width;
+                this.pz = this.z;
+            }
+
+            update() {
+                this.z -= currentSpeed;
+
+                if (this.z < 1) {
+                    this.reset();
+                    this.pz = this.z;
+                }
+            }
+
+            draw() {
+                let fov = width / 2;
+                let sx = (this.x / this.z) * fov + width / 2;
+                let sy = (this.y / this.z) * fov + height / 2;
+                let px = (this.x / this.pz) * fov + width / 2;
+                let py = (this.y / this.pz) * fov + height / 2;
+
+                this.pz = this.z;
+
+                let size = (1 - this.z / width) * 3;
+                let opacity = 1 - this.z / width;
+
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(sx, sy);
+
+                if ((this.x + this.y) % 3 === 0) {
+                    ctx.strokeStyle = `rgba(16, 185, 129, ${opacity})`;
+                } else {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                }
+
+                ctx.lineWidth = size;
+                ctx.lineCap = "round";
+                ctx.stroke();
+            }
+        }
+
+        for (let i = 0; i < numStars; i++) {
+            stars.push(new Star());
+        }
+
+        function animate() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.4)';
+            ctx.fillRect(0, 0, width, height);
+
+            currentSpeed += (targetSpeed - currentSpeed) * 0.05;
+
+            for (let i = 0; i < stars.length; i++) {
+                stars[i].update();
+                stars[i].draw();
+            }
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // 3. 极简交互逻辑
+        const btn = document.getElementById('engage-btn');
+        const uiContainer = document.getElementById('ui-container');
+
+        // 鼠标悬停：引擎充能，星空加速，圆环加速转动
+        btn.addEventListener('mouseenter', () => {
+            if(!warpActive) {
+                targetSpeed = 15;
+                document.body.classList.add('is-charging');
+            }
+        });
+
+        // 鼠标移出：恢复平静
+        btn.addEventListener('mouseleave', () => {
+            if(!warpActive) {
+                targetSpeed = 1.5;
+                document.body.classList.remove('is-charging');
+            }
+        });
+
+        // 点击：执行星际跃迁
+        btn.addEventListener('click', () => {
+            if(warpActive) return;
+            warpActive = true;
+            btn.disabled = true;
+
+            // 圆环进入疯狂旋转状态
+            document.body.classList.remove('is-charging');
+            document.body.classList.add('is-warping');
+
+            // UI 缩小模糊消失，遥测数据也会一起淡出
+            uiContainer.classList.add('ui-hidden');
+
+            // 星空速度推到极限
+            targetSpeed = 150;
+
+            // 触发强光
+            setTimeout(() => {
+                document.body.classList.add('jump-flash');
+            }, 800);
+
+            // 跳转
+            setTimeout(() => {
+                window.location.href = 'https://miee.cn';
+            }, 1300);
+        });
+
+    </script>
+</body>
+</html>

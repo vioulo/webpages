@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>克莱因蓝光标效果 - Canvas版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #002FA7;
+            cursor: none;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let cursorX = canvas.width * 0.85;
+        let cursorY = canvas.height * 0.35;
+        let velocityX = 0;
+        let velocityY = 0;
+        let lastX = cursorX;
+        let lastY = cursorY;
+        let rayRotation = 0;
+        let breathePhase = 0;
+        let lastMoveTime = 0;
+        let wasMoving = false;
+        let lastRayShuffleTime = 0;
+
+        const cursorRadius = 16;
+        const rayCount = 8;
+        const minLongRays = 1; // 可配置：最少长射线数量
+        const maxLongRays = 3; // 可配置：最多长射线数量
+        const rayRotationSpeed = 1.8;
+        const moveThreshold = 0.08;
+        const movingHoldMs = 120;
+        const rayShuffleInterval = 180;
+        const raySpecs = [];
+        const raysFromCenter = true; // 可配置：true 从中心出发，false 有内半径间隔
+        const enableRayFlicker = true; // 可配置：true 启用射线闪烁效果
+        const rayFlickerDuration = 4; // 闪烁周期，帧数越小闪烁越快
+        const rayFlickerMinAlpha = 0.45; // 最低闪烁透明度，避免颜色变得过暗
+
+        function createRaySpecs() {
+            raySpecs.length = 0;
+
+            const longRayCount = Math.floor(Math.random() * (maxLongRays - minLongRays + 1)) + minLongRays;
+            const longRayIndices = new Set();
+            while (longRayIndices.size < longRayCount) {
+                longRayIndices.add(Math.floor(Math.random() * rayCount));
+            }
+
+            for (let i = 0; i < rayCount; i++) {
+                const isLong = longRayIndices.has(i);
+                const maxLife = rayFlickerDuration + Math.floor(Math.random() * 3);
+                raySpecs.push({
+                    angleOffset: (Math.random() - 0.5) * 0.3, // 减小偏移以减少重合
+                    innerRadius: raysFromCenter ? 0 : 18 + Math.random() * 18,
+                    outerRadius: isLong ? 140 + Math.random() * 80 : 90 + Math.random() * 50,
+                    lineWidth: 1.4 + Math.random() * 2.8,
+                    opacity: 0.62 + Math.random() * 0.34,
+                    dashed: Math.random() > 0.38,
+                    maxLife,
+                    life: maxLife
+                });
+            }
+        }
+
+        createRaySpecs();
+
+        function clampCursor() {
+            cursorX = Math.min(Math.max(cursorRadius, cursorX), canvas.width - cursorRadius);
+            cursorY = Math.min(Math.max(cursorRadius, cursorY), canvas.height - cursorRadius);
+        }
+
+        function handleBounce() {
+            const damping = 0.7;
+            const bounceForce = 15;
+
+            if (cursorX - cursorRadius <= 0) {
+                cursorX = cursorRadius;
+                velocityX = Math.abs(velocityX) * damping + bounceForce;
+                velocityY *= 0.9;
+            }
+            if (cursorX + cursorRadius >= canvas.width) {
+                cursorX = canvas.width - cursorRadius;
+                velocityX = -Math.abs(velocityX) * damping - bounceForce;
+                velocityY *= 0.9;
+            }
+            if (cursorY - cursorRadius <= 0) {
+                cursorY = cursorRadius;
+                velocityY = Math.abs(velocityY) * damping + bounceForce;
+                velocityX *= 0.9;
+            }
+            if (cursorY + cursorRadius >= canvas.height) {
+                cursorY = canvas.height - cursorRadius;
+                velocityY = -Math.abs(velocityY) * damping - bounceForce;
+                velocityX *= 0.9;
+            }
+        }
+
+        function drawMoonCursor(isMoving) {
+            breathePhase += isMoving ? 0.015 : 0.03;
+            const breatheScale = Math.sin(breathePhase) * 0.5 + 0.5;
+            const glowRadius = isMoving ? 46 : 46 + breatheScale * 16;
+            const glowStrength = isMoving ? 0.45 : 0.58 + breatheScale * 0.18;
+
+            ctx.save();
+            ctx.translate(cursorX, cursorY);
+
+            const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, glowRadius);
+            glow.addColorStop(0, `rgba(255, 215, 0, ${glowStrength})`);
+            glow.addColorStop(0.3, `rgba(255, 215, 0, ${glowStrength * 0.55})`);
+            glow.addColorStop(0.65, `rgba(255, 215, 0, ${glowStrength * 0.18})`);
+            glow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#FFD84D';
+            ctx.beginPath();
+            ctx.arc(0, 0, cursorRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawRays() {
+            ctx.save();
+            ctx.translate(cursorX, cursorY);
+            ctx.rotate((rayRotation * Math.PI) / 180);
+
+            for (let i = 0; i < rayCount; i++) {
+                const ray = raySpecs[i];
+                const angle = (Math.PI * 2 * i) / rayCount + ray.angleOffset;
+
+                ctx.save();
+                ctx.rotate(angle);
+                const flicker = enableRayFlicker ? Math.max(rayFlickerMinAlpha, ray.life / ray.maxLife) : 1;
+                ctx.strokeStyle = `rgba(255, 215, 0, ${ray.opacity * flicker})`;
+                ctx.lineWidth = ray.lineWidth;
+                ctx.lineCap = 'round';
+                ctx.setLineDash(ray.dashed ? [8 + Math.random() * 4, 4 + Math.random() * 3] : []);
+
+                const length = ray.outerRadius - ray.innerRadius;
+                ctx.beginPath();
+                ctx.moveTo(-length / 2, 0);
+                ctx.lineTo(length / 2, 0);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            ctx.restore();
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            const targetX = e.clientX;
+            const targetY = e.clientY;
+
+            velocityX = (targetX - cursorX) * 0.15;
+            velocityY = (targetY - cursorY) * 0.15;
+
+            cursorX = targetX;
+            cursorY = targetY;
+            lastMoveTime = performance.now();
+        });
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            cursorX += velocityX;
+            cursorY += velocityY;
+
+            handleBounce();
+
+            const now = performance.now();
+            const deltaX = cursorX - lastX;
+            const deltaY = cursorY - lastY;
+            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            const isMoving = (distance > 0.1) || (now - lastMoveTime < movingHoldMs);
+
+            if (isMoving) {
+                if (!wasMoving || now - lastRayShuffleTime > rayShuffleInterval) {
+                    createRaySpecs();
+                    lastRayShuffleTime = now;
+                }
+                rayRotation += rayRotationSpeed;
+                drawRays();
+            }
+
+            // 更新射线生命周期
+            if (enableRayFlicker) {
+                for (let i = 0; i < raySpecs.length; i++) {
+                    if (raySpecs[i].life <= 0) {
+                        raySpecs[i].life = raySpecs[i].maxLife;
+                    }
+                    raySpecs[i].life--;
+                }
+            }
+
+            drawMoonCursor(isMoving);
+            wasMoving = isMoving;
+
+            velocityX *= 0.95;
+            velocityY *= 0.95;
+
+            lastX = cursorX;
+            lastY = cursorY;
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            clampCursor();
+        });
+    </script>
+</body>
+</html>

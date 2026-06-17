@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>克莱因蓝光标效果 - Canvas版</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #002FA7;
+            cursor: none;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // === 🎛️ 核心配置区（在此调整） ===
+    let rayStyle = 'sharp'; // 形状样式
+    // 颜色数组：单色统一，多色随机。支持 HEX 或 RGB 格式。
+    // 尝试修改为：['#FF0055', '#00FF99', '#00CCFF', '#FFD700'] 看效果！
+    // const rayColorPalette = ['#FFD700'];
+    const rayColorPalette = ['#FFD700', '#fff', '#FF0055', '#00FF99', '#00CCFF', '#FFD700'];
+
+    let rayGapEnabled = false; // 是否开启间隔
+    const rayGap = 15;         // 间隔像素值（建议 10~25）
+    const cursorRadius = 15;   // 光标半径
+
+    const maxRays = 12;
+    const raySpeed = 2;
+    const rayInterval = 100;   // 生成间隔 (ms)
+    // ==============================
+
+    let cursorX = canvas.width * 0.85;
+    let cursorY = canvas.height * 0.35;
+    let velocityX = 0;
+    let velocityY = 0;
+    let lastX = cursorX;
+    let lastY = cursorY;
+    let rayRotation = 0;
+    let breathePhase = 0;
+
+    // 样式列表 & 当前索引
+    const styleList = ['sharp','round','square','taper','pulse','wave','block','gradient','ribbon','spark','cone','neon'];
+    let styleIndex = styleList.indexOf(rayStyle);
+
+    // 样式配置字典
+    const styleConfig = {
+        sharp:   { type: 'line', lineCap: 'butt' },
+        round:   { type: 'line', lineCap: 'round' },
+        square:  { type: 'line', lineCap: 'square' },
+        taper:   { type: 'taper', lineCap: 'round' },
+        pulse:   { type: 'pulse', lineCap: 'round' },
+        wave:    { type: 'wave' },
+        block:   { type: 'block' },
+        gradient:{ type: 'gradient' },
+        ribbon:  { type: 'ribbon' },
+        spark:   { type: 'spark' },
+        cone:    { type: 'cone' },
+        neon:    { type: 'neon', lineCap: 'round' } // 新增：霓虹发光风格
+    };
+
+    // 👇 辅助工具：Hex/RGB 转 RGBA（自动处理透明度叠加）
+    function getColorWithAlpha(colorStr, alpha) {
+        if (!colorStr) return `rgba(255, 215, 0, ${alpha})`; // Fallback
+        if (/^#[0-9A-Fa-f]{6}$/.test(colorStr)) {
+            return `rgba(${parseInt(colorStr.slice(1,3),16)},${parseInt(colorStr.slice(3,5),16)},${parseInt(colorStr.slice(5,7),16)},${alpha})`;
+        }
+        if (/^#[0-9A-Fa-f]{3}$/.test(colorStr)) {
+            return `rgba(${parseInt(colorStr[1]+colorStr[1],16)},${parseInt(colorStr[2]+colorStr[2],16)},${parseInt(colorStr[3]+colorStr[3],16)},${alpha})`;
+        }
+        // 如果已经是 rgba/hsla，这里简化处理，直接返回（实际项目中可引入更复杂的解析）
+        return colorStr;
+    }
+
+    // 👇 从调色板随机取色
+    function getRandomColor() {
+        if (rayColorPalette.length === 0) return '#FFFFFF';
+        if (rayColorPalette.length === 1) return rayColorPalette[0];
+        return rayColorPalette[Math.floor(Math.random() * rayColorPalette.length)];
+    }
+
+    const rays = [];
+    class Ray {
+        constructor(x, y, angle) {
+            this.x = x;
+            this.y = y;
+            this.angle = angle;
+            this.length = Math.random() * 100 + 40;
+            this.width = Math.random() * 2 + 1.5;
+            this.opacity = Math.random() * 0.4 + 0.6;
+            this.isDashed = Math.random() > 0.5;
+            this.life = 5;
+            this.maxLife = 5;
+            this.pulsePhase = Math.random() * Math.PI * 2;
+
+            // 专属属性
+            this.waveFreq = 0.08 + Math.random() * 0.04;
+            this.waveAmp = 3 + Math.random() * 4;
+            this.blockCount = Math.floor(4 + Math.random() * 3);
+            this.sparkCount = Math.floor(6 + Math.random() * 5);
+            this.hueOffset = Math.random() * 30;
+            this.coneStartWidth = 1;
+            this.coneEndWidth = this.width * 4;
+
+            // 👇 颜色绑定：实例化时确定颜色，避免绘制时闪烁
+            this.color = getRandomColor();
+        }
+
+        update(cx, cy) {
+            this.x = cx;
+            this.y = cy;
+            this.life--;
+        }
+
+        draw(cfg, globalTime) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate((this.angle * Math.PI) / 180);
+
+            // 🔴 关键修复：计算真正的起始点（光标边缘 + 间隙）
+            const startX = rayGapEnabled ? (cursorRadius + rayGap) : 0;
+            const drawLength = Math.max(0, this.length - startX);
+
+            // 动态透明度计算
+            let currentOpacity = this.opacity;
+            if (cfg.type === 'pulse') {
+                const p = Math.sin(globalTime * 0.01 + this.pulsePhase) * 0.3 + 0.7;
+                currentOpacity *= p;
+            }
+
+            // === 样式分发绘制 ===
+            switch (cfg.type) {
+                case 'spark':   this._drawSpark(startX, drawLength, currentOpacity, globalTime); break;
+                case 'block':   this._drawBlock(startX, drawLength, currentOpacity, globalTime); break;
+                case 'ribbon':  this._drawRibbon(startX, drawLength, currentOpacity, globalTime); break;
+                case 'wave':    this._drawWave(startX, drawLength, currentOpacity, globalTime); break;
+                case 'gradient':this._drawGradient(startX, drawLength, currentOpacity, globalTime); break;
+                case 'cone':    this._drawCone(startX, drawLength, currentOpacity, globalTime); break;
+                case 'neon':    this._drawNeon(startX, drawLength, currentOpacity, globalTime); break;
+                default:        // sharp, round, square, taper
+                    ctx.lineCap = cfg.lineCap || 'butt';
+                    ctx.lineWidth = this.width;
+                    ctx.setLineDash(this.isDashed ? [6, 4] : []);
+
+                    let len = drawLength;
+
+                    if (cfg.type === 'taper') {
+                        const baseColor = getColorWithAlpha(this.color, currentOpacity);
+                        const grad = ctx.createLinearGradient(startX, 0, startX + len, 0);
+                        grad.addColorStop(0, baseColor);
+                        grad.addColorStop(1, getColorWithAlpha(this.color, 0));
+                        ctx.strokeStyle = grad;
+                    } else {
+                        ctx.strokeStyle = getColorWithAlpha(this.color, currentOpacity);
+                    }
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, 0);
+                    ctx.lineTo(startX + len, 0);
+                    ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        // 🌊 波浪曲线
+        _drawWave(startX, length, alpha, time) {
+            const steps = 30;
+            const stepLen = length / steps;
+            const color = getColorWithAlpha(this.color, alpha);
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = this.width * 1.2;
+            ctx.shadowColor = getColorWithAlpha(this.color, 0.5);
+            ctx.shadowBlur = 8;
+            ctx.lineCap = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(startX, 0);
+            for (let i = 1; i <= steps; i++) {
+                const x = startX + i * stepLen;
+                const offset = (x - startX);
+                const y = Math.sin(offset * this.waveFreq + time * 0.005 + this.pulsePhase) * this.waveAmp;
+                ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        // 🧱 块状分段
+        _drawBlock(startX, length, alpha, time) {
+            const segLen = length / this.blockCount;
+            const gapSize = 3;
+            const p = Math.sin(time * 0.008 + this.pulsePhase) * 0.2 + 0.9;
+
+            for (let i = 0; i < this.blockCount; i++) {
+                const bx = startX + i * segLen + gapSize;
+                const bw = segLen - gapSize * 2;
+                if (bw <= 0) continue;
+
+                const a = alpha * (i % 2 === 0 ? 1 : 0.5) * p;
+                ctx.fillStyle = getColorWithAlpha(this.color, a);
+                ctx.fillRect(bx, -this.width / 2, bw, this.width);
+            }
+        }
+
+        // 🎀 宽幅缎带
+        _drawRibbon(startX, length, alpha, time) {
+            const w = this.width * 3.5;
+            const twist = Math.sin(time * 0.005 + this.pulsePhase) * 0.15;
+            const endX = startX + length;
+
+            ctx.fillStyle = getColorWithAlpha(this.color, alpha * 0.35);
+            ctx.beginPath();
+            ctx.moveTo(startX, -w/2);
+            ctx.lineTo(endX, -w/2 * (1 + twist));
+            ctx.lineTo(endX, w/2 * (1 - twist));
+            ctx.lineTo(startX, w/2);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = getColorWithAlpha('#FFFFFF', alpha * 0.6);
+            ctx.lineWidth = 1.2;
+            ctx.beginPath(); ctx.moveTo(startX, -w/2+1); ctx.lineTo(endX, -w/2*(1+twist)+1); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(startX, w/2-1); ctx.lineTo(endX, w/2*(1-twist)-1); ctx.stroke();
+        }
+
+        // ✨ 粒子火花
+        _drawSpark(startX, length, alpha, time) {
+            const count = this.sparkCount;
+            const size = this.width * 1.8;
+            for (let i = 0; i < count; i++) {
+                const t = i / (count - 1);
+                const x = startX + t * length;
+                const flicker = Math.sin(time * 0.02 + this.pulsePhase + i) * 0.3 + 0.7;
+                const s = size * (0.6 + t * 0.8) * flicker;
+                const a = alpha * (1 - t * 0.6) * flicker;
+
+                ctx.fillStyle = getColorWithAlpha(this.color, a * 0.8);
+                ctx.beginPath(); ctx.arc(x, 0, s * 2.5, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath(); ctx.arc(x, 0, s * 0.6, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        // 🌈 彩虹/多色渐变 (适配新数组)
+        _drawGradient(startX, length, alpha, time) {
+            // 如果数组有多个颜色，取首尾做渐变；如果单色，做透明度渐变
+            const len = length * (Math.sin(time * 0.008 + this.pulsePhase) * 0.15 + 0.92);
+            const grad = ctx.createLinearGradient(startX, 0, startX + len, 0);
+
+            if (rayColorPalette.length >= 2) {
+                const c1 = getColorWithAlpha(this.color, alpha);
+                const c2 = getColorWithAlpha(rayColorPalette[(rayColorPalette.indexOf(this.color) + 1) % rayColorPalette.length] || this.color, alpha * 0.5);
+                grad.addColorStop(0, c1);
+                grad.addColorStop(1, c2);
+            } else {
+                const c = getColorWithAlpha(this.color, alpha);
+                grad.addColorStop(0, c);
+                grad.addColorStop(1, getColorWithAlpha(this.color, 0.1));
+            }
+
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = this.width * 1.3;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(startX, 0); ctx.lineTo(startX + len, 0); ctx.stroke();
+        }
+
+        // 🔺 长三角锥形
+        _drawCone(startX, length, alpha, time) {
+            if (length <= 0) return;
+            const p = Math.sin(time * 0.01 + this.pulsePhase) * 0.15 + 0.92;
+            const endX = startX + length;
+            const endW = this.coneEndWidth * p;
+
+            const grad = ctx.createLinearGradient(startX, 0, endX, 0);
+            grad.addColorStop(0, getColorWithAlpha(this.color, alpha * 0.9));
+            grad.addColorStop(1, getColorWithAlpha(this.color, alpha * 0.3));
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(startX, 0); ctx.lineTo(endX, -endW / 2); ctx.lineTo(endX, endW / 2);
+            ctx.closePath(); ctx.fill();
+
+            ctx.strokeStyle = getColorWithAlpha('#FFFFFF', alpha * 0.7);
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(startX, 0); ctx.lineTo(endX, -endW / 2); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(startX, 0); ctx.lineTo(endX, endW / 2); ctx.stroke();
+        }
+
+        // ✨ 霓虹发光 (新增)
+        _drawNeon(startX, length, alpha, time) {
+            const col = getColorWithAlpha(this.color, alpha);
+            ctx.strokeStyle = col;
+            ctx.lineWidth = this.width;
+            ctx.lineCap = 'round';
+            ctx.shadowColor = col;
+            ctx.shadowBlur = 15;
+            ctx.beginPath(); ctx.moveTo(startX, 0); ctx.lineTo(startX + length, 0); ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+
+        isDead() { return this.life <= 0; }
+    }
+
+    function createRays(x, y) {
+        for (let i = 0; i < maxRays; i++) {
+            const angle = (360 / maxRays) * i + rayRotation;
+            rays.push(new Ray(x, y, angle));
+        }
+        rayRotation += raySpeed;
+    }
+
+    function drawCursor(isMoving) {
+        if (!isMoving) breathePhase += 0.03;
+        const breatheScale = Math.sin(breathePhase) * 0.5 + 0.5;
+        const glowR = isMoving ? 40 : 40 + breatheScale * 20;
+        const int = isMoving ? 0.3 : 0.5 + breatheScale * 0.3;
+
+        ctx.save(); ctx.translate(cursorX, cursorY);
+        const g = ctx.createRadialGradient(0,0,0,0,0,glowR);
+        g.addColorStop(0, getColorWithAlpha(rayColorPalette[0], int*0.8));
+        g.addColorStop(1, 'rgba(255,215,0,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(0,0,glowR,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = rayColorPalette[0] || '#FFD700';
+        ctx.beginPath(); ctx.arc(0,0,cursorRadius,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+    }
+
+    function handleBounce() {
+        const d=0.7, b=15;
+        if(cursorX<cursorRadius){cursorX=cursorRadius;velocityX=Math.abs(velocityX)*d+b;velocityY*=0.9;}
+        if(cursorX>canvas.width-cursorRadius){cursorX=canvas.width-cursorRadius;velocityX=-Math.abs(velocityX)*d-b;velocityY*=0.9;}
+        if(cursorY<cursorRadius){cursorY=cursorRadius;velocityY=Math.abs(velocityY)*d+b;velocityX*=0.9;}
+        if(cursorY>canvas.height-cursorRadius){cursorY=canvas.height-cursorRadius;velocityY=-Math.abs(velocityY)*d-b;velocityX*=0.9;}
+    }
+
+    document.addEventListener('mousemove', e => {
+        velocityX = (e.clientX - cursorX) * 0.15;
+        velocityY = (e.clientY - cursorY) * 0.15;
+        cursorX = e.clientX; cursorY = e.clientY;
+    });
+
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            styleIndex = (styleIndex + 1) % styleList.length;
+            rayStyle = styleList[styleIndex];
+            console.log(`✨ 射线样式: ${rayStyle}`);
+        }
+        if (e.key.toLowerCase() === 'g') {
+            rayGapEnabled = !rayGapEnabled;
+            console.log(`🔘 间隔开关: ${rayGapEnabled ? 'ON' : 'OFF'}`);
+        }
+    });
+
+    let lastRayTime = 0;
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        cursorX += velocityX; cursorY += velocityY;
+        handleBounce();
+        const dist = Math.hypot(cursorX - lastX, cursorY - lastY);
+        const isMoving = dist > 0.1;
+        const now = Date.now();
+
+        if (isMoving && dist > 0.5 && now - lastRayTime > rayInterval) {
+            createRays(cursorX, cursorY); lastRayTime = now;
+        }
+
+        const cfg = styleConfig[rayStyle];
+        for (let i = rays.length - 1; i >= 0; i--) {
+            rays[i].update(cursorX, cursorY);
+            rays[i].draw(cfg, now);
+            if (rays[i].isDead()) rays.splice(i, 1);
+        }
+
+        drawCursor(isMoving);
+        velocityX *= 0.95; velocityY *= 0.95;
+        lastX = cursorX; lastY = cursorY;
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        if(cursorX>canvas.width-cursorRadius) cursorX=canvas.width-cursorRadius;
+        if(cursorY>canvas.height-cursorRadius) cursorY=canvas.height-cursorRadius;
+    });
+</script>
+
+</body>
+</html>

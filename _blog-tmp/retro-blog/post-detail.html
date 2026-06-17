@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>深入理解 Windows 7 Aero 特效 - 我的复古博客</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="window">
+    <div class="window-titlebar">
+      <div class="window-title">
+        <div class="window-icon"></div>
+        <span>深入理解 Windows 7 Aero 特效 - Microsoft Word</span>
+      </div>
+      <div class="window-controls">
+        <div class="window-btn minimize">_</div>
+        <div class="window-btn maximize">□</div>
+        <div class="window-btn close">✕</div>
+      </div>
+    </div>
+
+    <div class="menubar">
+      <a href="index.html" class="menu-item">🏠 首页</a>
+      <a href="posts.html" class="menu-item">📄 文章列表</a>
+      <a href="gallery.html" class="menu-item">🎨 卡片集</a>
+      <a href="timeline.html" class="menu-item">⏰ 时间轴</a>
+      <a href="friends.html" class="menu-item">🔗 友情链接</a>
+      <a href="about.html" class="menu-item">ℹ️ 关于我</a>
+    </div>
+
+    <div class="window-content">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="color: #0078d7; margin-bottom: 16px; font-size: 32px; border-bottom: 3px solid #0078d7; padding-bottom: 12px;">
+          深入理解 Windows 7 Aero 特效
+        </h1>
+
+        <div style="background: linear-gradient(to bottom, #f8f8f8, #e8e8e8); padding: 12px 16px; border: 1px solid #d0d0d0; border-radius: 4px; margin-bottom: 24px; font-size: 13px;">
+          <div style="margin-bottom: 8px;">
+            <strong>📅 发布日期:</strong> 2026年4月25日
+          </div>
+          <div style="margin-bottom: 8px;">
+            <strong>👤 作者:</strong> 复古博主
+          </div>
+          <div style="margin-bottom: 8px;">
+            <strong>⏱️ 阅读时间:</strong> 约 8 分钟
+          </div>
+          <div>
+            <strong>🏷️ 标签:</strong>
+            <span class="tag">Windows</span>
+            <span class="tag">前端</span>
+            <span class="tag">CSS</span>
+          </div>
+        </div>
+
+        <div class="dos-terminal" style="margin: 24px 0;">
+          <div class="dos-prompt">C:\Articles\Windows7></div>
+          <div class="dos-text">type aero-effects.txt
+
+正在读取文件...
+
+Windows 7 Aero 是微软在 2009 年推出的革命性视觉特效系统。
+它的毛玻璃效果、窗口动画和任务栏预览功能定义了一个时代。
+
+本文将深入探讨 Aero 的技术实现和设计理念。</div>
+        </div>
+
+        <h2 style="color: #0078d7; margin: 32px 0 16px 0; font-size: 24px; border-left: 4px solid #0078d7; padding-left: 12px;">
+          什么是 Aero Glass？
+        </h2>
+
+        <p style="line-height: 1.8; margin-bottom: 16px; text-align: justify;">
+          Aero Glass 是 Windows 7 最具标志性的视觉特效。它通过 Desktop Window Manager (DWM) 实现，
+          利用 GPU 加速渲染半透明的窗口边框，创造出独特的毛玻璃效果。这种设计不仅美观，
+          还能让用户在多窗口环境下更好地感知窗口层次。
+        </p>
+
+        <div style="background: #e5f3ff; border-left: 4px solid #0078d7; padding: 16px; margin: 20px 0; border-radius: 0 4px 4px 0;">
+          <div style="font-weight: 600; margin-bottom: 8px; color: #0078d7;">💡 技术要点</div>
+          <div style="font-size: 14px; line-height: 1.6;">
+            Aero 需要支持 DirectX 9 的显卡和 WDDM 驱动程序。它使用像素着色器来实现模糊效果，
+            并通过硬件加速确保流畅的动画性能。
+          </div>
+        </div>
+
+        <h2 style="color: #0078d7; margin: 32px 0 16px 0; font-size: 24px; border-left: 4px solid #0078d7; padding-left: 12px;">
+          核心特性
+        </h2>
+
+        <div style="background: white; border: 1px solid #d0d0d0; border-radius: 4px; padding: 20px; margin: 20px 0;">
+          <h3 style="color: #333; margin-bottom: 12px;">1. 透明窗口边框</h3>
+          <p style="line-height: 1.8; margin-bottom: 16px;">
+            窗口边框采用半透明设计，可以看到背后的内容。这种效果通过多层渲染和高斯模糊实现。
+          </p>
+
+          <h3 style="color: #333; margin-bottom: 12px;">2. 窗口动画</h3>
+          <p style="line-height: 1.8; margin-bottom: 16px;">
+            最小化、最大化和关闭窗口时的流畅动画，使用缓动函数创造自然的运动效果。
+          </p>
+
+          <h3 style="color: #333; margin-bottom: 12px;">3. 任务栏预览</h3>
+          <p style="line-height: 1.8;">
+            鼠标悬停在任务栏图标上时，会显示窗口的实时预览缩略图，这是通过 DWM 的截图功能实现的。
+          </p>
+        </div>
+
+        <h2 style="color: #0078d7; margin: 32px 0 16px 0; font-size: 24px; border-left: 4px solid #0078d7; padding-left: 12px;">
+          在 Web 中重现 Aero 效果
+        </h2>
+
+        <p style="line-height: 1.8; margin-bottom: 16px;">
+          现代 CSS 提供了 backdrop-filter 属性，可以实现类似的毛玻璃效果：
+        </p>
+
+        <div style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 13px; overflow-x: auto; margin: 20px 0;">
+<pre style="margin: 0;">.aero-window {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.aero-titlebar {
+  background: linear-gradient(
+    to bottom,
+    rgba(69, 128, 196, 0.9),
+    rgba(46, 95, 158, 0.9)
+  );
+}</pre>
+        </div>
+
+        <div style="background: #fffacd; border: 2px solid #ffd700; padding: 16px; margin: 24px 0; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <span>⚠️</span>
+            <span>兼容性提示</span>
+          </div>
+          <div style="font-size: 13px; line-height: 1.6;">
+            backdrop-filter 在某些旧版浏览器中可能不被支持。建议提供降级方案，
+            使用纯色背景作为后备选项。
+          </div>
+        </div>
+
+        <h2 style="color: #0078d7; margin: 32px 0 16px 0; font-size: 24px; border-left: 4px solid #0078d7; padding-left: 12px;">
+          设计哲学
+        </h2>
+
+        <p style="line-height: 1.8; margin-bottom: 16px; text-align: justify;">
+          Aero 的设计理念是"清晰、自信、连贯"。透明效果不是为了炫技，而是为了帮助用户更好地理解界面层次。
+          每一个动画、每一处阴影都经过精心设计，确保既美观又实用。
+        </p>
+
+        <p style="line-height: 1.8; margin-bottom: 16px; text-align: justify;">
+          这种设计影响深远，即使在 Windows 10 和 11 中，我们仍能看到 Aero 的影子。
+          Fluent Design 的 Acrylic 材质就是 Aero Glass 的现代演绎。
+        </p>
+
+        <h2 style="color: #0078d7; margin: 32px 0 16px 0; font-size: 24px; border-left: 4px solid #0078d7; padding-left: 12px;">
+          总结
+        </h2>
+
+        <p style="line-height: 1.8; margin-bottom: 16px;">
+          Windows 7 Aero 不仅是一套视觉特效，更是一个时代的象征。它证明了技术与美学可以完美结合，
+          创造出既实用又令人愉悦的用户体验。
+        </p>
+
+        <p style="line-height: 1.8; margin-bottom: 32px;">
+          作为开发者，我们可以从 Aero 的设计中学到很多：注重细节、追求流畅、平衡美观与性能。
+          这些原则在今天依然适用。
+        </p>
+
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="posts.html" class="btn-primary btn">← 返回文章列表</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <div>第 1 页，共 1 页</div>
+      <div>字数: 1,234 | 行数: 42</div>
+    </div>
+  </div>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
