@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的项目作品集</title>
+    <!-- 引入 Inter 字体，提升现代感 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 全局变量与重置 --- */
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #181b21;
+            --text-main: #ffffff;
+            --text-sub: #9ca3af;
+            --accent: #6366f1; /* 靛蓝色强调色 */
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --border: #2d333b;
+            --radius: 16px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; }
+
+        /* --- 布局容器 --- */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        /* --- 头部区域 --- */
+        header {
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+            background: linear-gradient(to right, #fff, #9ca3af);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-sub);
+            max-width: 600px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 24px;
+            width: fit-content;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent);
+        }
+
+        /* --- 项目网格 (Bento Grid) --- */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* --- 项目卡片 --- */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 320px;
+        }
+
+        /* 悬停效果 */
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--text-main);
+        }
+
+        .card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .card p {
+            color: var(--text-sub);
+            font-size: 0.95rem;
+            margin-bottom: 24px;
+            flex-grow: 1; /* 让描述文字撑开空间 */
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tag {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .card:hover .card-link {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        /* --- 底部 --- */
+        footer {
+            margin-top: 100px;
+            padding-top: 40px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        .social-links a {
+            margin-left: 20px;
+            transition: color 0.2s;
+        }
+        .social-links a:hover { color: var(--text-main); }
+
+        /* --- 移动端适配 --- */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            .container { padding: 40px 20px; }
+            .card { min-height: auto; padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 头部信息 -->
+        <header>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                Open to work / 正在接洽新项目
+            </div>
+            <h1>Creative Developer<br>& Designer.</h1>
+            <p class="subtitle">
+                你好，我是 Alex。专注于构建具有优秀交互体验和视觉美感的 Web 应用。这里是我精选的一些近期项目。
+            </p>
+        </header>
+
+        <!-- 项目列表 -->
+        <section class="projects-grid">
+
+            <!-- 项目 1 -->
+            <article class="card">
+                <div>
+                    <div class="card-icon">
+                        <!-- SVG Icon: Layout -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                    </div>
+                    <h3>SaaS Dashboard</h3>
+                    <p>一个为金融科技公司设计的数据可视化后台，包含实时图表、暗色模式和复杂的权限管理系统。</p>
+                    <div class="tags">
+                        <span class="tag">React</span>
+                        <span class="tag">TypeScript</span>
+                        <span class="tag">D3.js</span>
+                    </div>
+                </div>
+                <a href="#" class="card-link">
+                    查看案例
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+            </article>
+
+            <!-- 项目 2 -->
+            <article class="card">
+                <div>
+                    <div class="card-icon">
+                        <!-- SVG Icon: Smartphone -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                    </div>
+                    <h3>E-Commerce App</h3>
+                    <p>极简主义风格的电商移动端应用，注重流畅的购物体验和微交互动画，转化率提升了 20%。</p>
+                    <div class="tags">
+                        <span class="tag">Vue 3</span>
+                        <span class="tag">Tailwind</span>
+                        <span class="tag">Node.js</span>
+                    </div>
+                </div>
+                <a href="#" class="card-link">
+                    查看案例
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+            </article>
+
+            <!-- 项目 3 -->
+            <article class="card">
+                <div>
+                    <div class="card-icon">
+                        <!-- SVG Icon: Zap -->
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    </div>
+                    <h3>AI Writer Tool</h3>
+                    <p>基于 LLM 的智能写作辅助工具，支持多语言润色、续写和风格迁移，拥有简洁的编辑器界面。</p>
+                    <div class="tags">
+                        <span class="tag">Python</span>
+                        <span class="tag">Next.js</span>
+                        <span class="tag">OpenAI API</span>
+                    </div>
+                </div>
+                <a href="#" class="card-link">
+                    查看案例
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+            </article>
+
+        </section>
+
+        <!-- 底部链接 -->
+        <footer>
+            <div>&copy; 2026 Alex Design. All rights reserved.</div>
+            <div class="social-links">
+                <a href="#">GitHub</a>
+                <a href="#">Twitter</a>
+                <a href="#">Email</a>
+            </div>
+        </footer>
+    </div>
+
+</body>
+</html>
