@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>3D 不规则粒子通道</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #030711;
+    font-family:
+        Inter,
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+}
+
+canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ==============================
+   控制面板
+============================== */
+
+.panel {
+    position: fixed;
+    z-index: 10;
+
+    top: 20px;
+    right: 20px;
+
+    width: 310px;
+
+    padding: 20px;
+
+    color: #fff;
+
+    background: rgba(5, 10, 24, .82);
+
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+
+    backdrop-filter: blur(20px);
+
+    box-shadow:
+        0 20px 60px rgba(0,0,0,.45),
+        inset 0 1px rgba(255,255,255,.04);
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.group {
+    margin-bottom: 17px;
+}
+
+.label {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 7px;
+
+    color: rgba(255,255,255,.65);
+
+    font-size: 12px;
+}
+
+.value {
+    color: #fff;
+    font-family: monospace;
+}
+
+select,
+input[type="color"] {
+    width: 100%;
+    height: 36px;
+
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.1);
+
+    background: rgba(255,255,255,.05);
+    color: white;
+}
+
+select {
+    padding: 0 10px;
+}
+
+input[type="range"] {
+    width: 100%;
+    accent-color: #64dfff;
+}
+
+input[type="color"] {
+    padding: 3px;
+}
+
+button {
+    width: 100%;
+    height: 38px;
+
+    margin-top: 3px;
+
+    border: 0;
+    border-radius: 8px;
+
+    color: white;
+
+    background: rgba(70,210,255,.14);
+
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+button:hover {
+    background: rgba(70,210,255,.25);
+}
+
+.tip {
+    margin-top: 15px;
+    padding-top: 14px;
+
+    border-top: 1px solid rgba(255,255,255,.08);
+
+    font-size: 11px;
+    line-height: 1.7;
+
+    color: rgba(255,255,255,.4);
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="panel">
+
+    <div class="title">
+        3D 粒子流通道
+    </div>
+
+    <!-- 方向 -->
+    <div class="group">
+
+        <div class="label">
+            <span>运动方向</span>
+        </div>
+
+        <select id="direction">
+
+            <option value="top">
+                顶部 → 底部
+            </option>
+
+            <option value="bottom">
+                底部 → 顶部
+            </option>
+
+            <option value="left">
+                左侧 → 右侧
+            </option>
+
+            <option value="right">
+                右侧 → 左侧
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- 通道数量 -->
+    <div class="group">
+
+        <div class="label">
+            <span>通道数量</span>
+            <span class="value" id="channelValue">
+                28
+            </span>
+        </div>
+
+        <input
+            id="channel"
+            type="range"
+            min="5"
+            max="100"
+            value="28"
+        >
+
+    </div>
+
+
+    <!-- 通道宽度 -->
+    <div class="group">
+
+        <div class="label">
+            <span>通道宽度</span>
+            <span class="value" id="widthValue">
+                1.2
+            </span>
+        </div>
+
+        <input
+            id="width"
+            type="range"
+            min="0.3"
+            max="5"
+            step="0.1"
+            value="1.2"
+        >
+
+    </div>
+
+
+    <!-- 不规则程度 -->
+    <div class="group">
+
+        <div class="label">
+            <span>不规则程度</span>
+            <span class="value" id="irregularValue">
+                65
+            </span>
+        </div>
+
+        <input
+            id="irregular"
+            type="range"
+            min="0"
+            max="100"
+            value="65"
+        >
+
+    </div>
+
+
+    <!-- 不规则粒度 -->
+    <div class="group">
+
+        <div class="label">
+            <span>不规则粒度</span>
+            <span class="value" id="grainValue">
+                30
+            </span>
+        </div>
+
+        <input
+            id="grain"
+            type="range"
+            min="5"
+            max="100"
+            value="30"
+        >
+
+    </div>
+
+
+    <!-- 粒子数量 -->
+    <div class="group">
+
+        <div class="label">
+            <span>每条通道粒子数</span>
+            <span class="value" id="particleValue">
+                4
+            </span>
+        </div>
+
+        <input
+            id="particle"
+            type="range"
+            min="1"
+            max="12"
+            value="4"
+        >
+
+    </div>
+
+
+    <!-- 光流速度 -->
+    <div class="group">
+
+        <div class="label">
+            <span>光流速度</span>
+            <span class="value" id="speedValue">
+                1.2
+            </span>
+        </div>
+
+        <input
+            id="speed"
+            type="range"
+            min=".1"
+            max="5"
+            step=".1"
+            value="1.2"
+        >
+
+    </div>
+
+
+    <!-- 光流长度 -->
+    <div class="group">
+
+        <div class="label">
+            <span>光流长度</span>
+            <span class="value" id="trailValue">
+                80
+            </span>
+        </div>
+
+        <input
+            id="trail"
+            type="range"
+            min="10"
+            max="250"
+            value="80"
+        >
+
+    </div>
+
+
+    <!-- 发光 -->
+    <div class="group">
+
+        <div class="label">
+            <span>发光强度</span>
+            <span class="value" id="glowValue">
+                70
+            </span>
+        </div>
+
+        <input
+            id="glow"
+            type="range"
+            min="0"
+            max="100"
+            value="70"
+        >
+
+    </div>
+
+
+    <!-- 边缘距离 -->
+    <div class="group">
+
+        <div class="label">
+            <span>边缘距离</span>
+            <span class="value" id="distanceValue">
+                0
+            </span>
+        </div>
+
+        <input
+            id="distance"
+            type="range"
+            min="0"
+            max="300"
+            value="0"
+        >
+
+    </div>
+
+
+    <!-- 背景 -->
+    <div class="group">
+
+        <div class="label">
+            <span>背景颜色</span>
+        </div>
+
+        <input
+            id="background"
+            type="color"
+            value="#030711"
+        >
+
+    </div>
+
+
+    <button id="random">
+        随机生成通道
+    </button>
+
+
+    <div class="tip">
+        粒子会沿着完整的不规则通道运动。<br>
+        粒子拖尾会产生类似“虚线流光”的效果。
+    </div>
+
+</div>
+
+
+<script>
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+let W = 0;
+let H = 0;
+
+
+function resize() {
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    const dpr =
+        window.devicePixelRatio || 1;
+
+    canvas.width =
+        W * dpr;
+
+    canvas.height =
+        H * dpr;
+
+    canvas.style.width =
+        W + "px";
+
+    canvas.style.height =
+        H + "px";
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+}
+
+window.addEventListener(
+    "resize",
+    resize
+);
+
+resize();
+
+
+/* =========================================
+   参数
+========================================= */
+
+const config = {
+
+    direction: "top",
+
+    channels: 28,
+
+    width: 1.2,
+
+    irregular: 65,
+
+    grain: 30,
+
+    particles: 4,
+
+    speed: 1.2,
+
+    trail: 80,
+
+    glow: 70,
+
+    distance: 0,
+
+    background: "#030711"
+
+};
+
+
+/* =========================================
+   工具
+========================================= */
+
+function random(min, max) {
+
+    return Math.random() *
+        (max - min) +
+        min;
+
+}
+
+
+function clamp(
+    value,
+    min,
+    max
+) {
+
+    return Math.max(
+        min,
+        Math.min(max, value)
+    );
+
+}
+
+
+/* =========================================
+   不规则函数
+========================================= */
+
+function noise(
+    x,
+    seed
+) {
+
+    return (
+
+        Math.sin(
+            x * 1.7 +
+            seed
+        ) * .5 +
+
+        Math.sin(
+            x * 3.8 +
+            seed * 2
+        ) * .25 +
+
+        Math.sin(
+            x * 8.7 +
+            seed * 3
+        ) * .15
+
+    );
+
+}
+
+
+/* =========================================
+   通道
+========================================= */
+
+class Channel {
+
+    constructor(index) {
+
+        this.index =
+            index;
+
+        this.seed =
+            random(0, 10000);
+
+        this.depth =
+            random(.35, 1);
+
+        this.points = [];
+
+        this.create();
+
+    }
+
+
+    create() {
+
+        this.points = [];
+
+        const dir =
+            config.direction;
+
+
+        const irregular =
+            config.irregular / 100;
+
+
+        const grain =
+            config.grain / 100;
+
+
+        /*
+         * 每条通道使用不同的中心位置
+         */
+
+        const position =
+            (this.index + .5) /
+            config.channels;
+
+
+        /*
+         * 顶部到底部
+         */
+
+        if (
+            dir === "top" ||
+            dir === "bottom"
+        ) {
+
+            const startX =
+                W *
+                position;
+
+
+            const segments =
+                Math.max(
+                    12,
+                    Math.floor(
+                        18 +
+                        grain * 50
+                    )
+                );
+
+
+            for (
+                let i = 0;
+                i <= segments;
+                i++
+            ) {
+
+                const t =
+                    i / segments;
+
+
+                /*
+                 * 主体随机偏移
+                 */
+
+                const wave =
+                    noise(
+                        t * 3,
+                        this.seed
+                    );
+
+
+                const wave2 =
+                    noise(
+                        t * 8,
+                        this.seed + 50
+                    );
+
+
+                const offset =
+                    (
+                        wave * .7 +
+                        wave2 * .3
+                    ) *
+                    W *
+                    .15 *
+                    irregular;
+
+
+                /*
+                 * 边缘距离
+                 */
+
+                let x =
+                    startX +
+                    offset;
+
+
+                let y =
+                    t * H;
+
+
+                /*
+                 * 方向翻转
+                 */
+
+                if (
+                    dir === "bottom"
+                ) {
+
+                    y =
+                        H -
+                        t * H;
+
+                }
+
+
+                this.points.push({
+
+                    x,
+                    y
+
+                });
+
+            }
+
+        }
+
+
+        /*
+         * 左右
+         */
+
+        else {
+
+            const startY =
+                H *
+                position;
+
+
+            const segments =
+                Math.max(
+                    12,
+                    Math.floor(
+                        18 +
+                        grain * 50
+                    )
+                );
+
+
+            for (
+                let i = 0;
+                i <= segments;
+                i++
+            ) {
+
+                const t =
+                    i / segments;
+
+
+                const wave =
+                    noise(
+                        t * 3,
+                        this.seed
+                    );
+
+
+                const wave2 =
+                    noise(
+                        t * 8,
+                        this.seed + 50
+                    );
+
+
+                const offset =
+                    (
+                        wave * .7 +
+                        wave2 * .3
+                    ) *
+                    H *
+                    .15 *
+                    irregular;
+
+
+                let x =
+                    t * W;
+
+                let y =
+                    startY +
+                    offset;
+
+
+                if (
+                    dir === "right"
+                ) {
+
+                    x =
+                        W -
+                        t * W;
+
+                }
+
+
+                this.points.push({
+
+                    x,
+                    y
+
+                });
+
+            }
+
+        }
+
+    }
+
+
+    /*
+     * 根据进度获得轨道位置
+     */
+
+    getPoint(t) {
+
+        t =
+            clamp(
+                t,
+                0,
+                1
+            );
+
+
+        const points =
+            this.points;
+
+
+        const index =
+            t *
+            (points.length - 1);
+
+
+        const i =
+            Math.floor(index);
+
+
+        const f =
+            index - i;
+
+
+        const p1 =
+            points[i];
+
+
+        const p2 =
+            points[
+                Math.min(
+                    i + 1,
+                    points.length - 1
+                )
+            ];
+
+
+        return {
+
+            x:
+                p1.x +
+                (p2.x - p1.x) *
+                f,
+
+            y:
+                p1.y +
+                (p2.y - p1.y) *
+                f
+
+        };
+
+    }
+
+
+    /*
+     * 画完整轨道
+     */
+
+    drawTrack() {
+
+        if (
+            this.points.length < 2
+        ) {
+
+            return;
+
+        }
+
+
+        /*
+         * 景深
+         */
+
+        const depth =
+            this.depth;
+
+
+        const alpha =
+            .05 +
+            depth * .16;
+
+
+        ctx.save();
+
+
+        ctx.globalAlpha =
+            alpha;
+
+
+        ctx.lineWidth =
+            config.width *
+            depth;
+
+
+        ctx.lineCap =
+            "round";
+
+
+        ctx.lineJoin =
+            "round";
+
+
+        ctx.strokeStyle =
+            "rgba(90,190,255,1)";
+
+
+        ctx.beginPath();
+
+
+        ctx.moveTo(
+            this.points[0].x,
+            this.points[0].y
+        );
+
+
+        for (
+            let i = 1;
+            i < this.points.length;
+            i++
+        ) {
+
+            const p =
+                this.points[i];
+
+
+            ctx.lineTo(
+                p.x,
+                p.y
+            );
+
+        }
+
+
+        ctx.stroke();
+
+
+        ctx.restore();
+
+    }
+
+}
+
+
+/* =========================================
+   光粒子
+========================================= */
+
+class FlowParticle {
+
+    constructor(channel) {
+
+        this.channel =
+            channel;
+
+        this.progress =
+            random(0, 1);
+
+        this.offset =
+            random(-.008, .008);
+
+        this.speed =
+            random(.0008, .002);
+
+        this.size =
+            random(.7, 1.5);
+
+    }
+
+
+    update() {
+
+        this.progress +=
+            this.speed *
+            config.speed;
+
+
+        if (
+            this.progress > 1
+        ) {
+
+            this.progress -= 1;
+
+        }
+
+    }
+
+
+    draw() {
+
+        const channel =
+            this.channel;
+
+
+        /*
+         * 当前光点
+         */
+
+        const point =
+            channel.getPoint(
+                this.progress
+            );
+
+
+        /*
+         * 拖尾长度
+         */
+
+        const trail =
+            config.trail /
+            Math.max(W, H);
+
+
+        const steps = 20;
+
+
+        /*
+         * 先画拖尾
+         */
+
+        for (
+            let i = steps;
+            i >= 0;
+            i--
+        ) {
+
+            const p =
+                i / steps;
+
+
+            const progress =
+                this.progress -
+                trail * p;
+
+
+            const pos =
+                channel.getPoint(
+                    progress < 0
+                        ? progress + 1
+                        : progress
+                );
+
+
+            /*
+             * 越靠近尾部越透明
+             */
+
+            const alpha =
+                Math.pow(
+                    1 - p,
+                    2.5
+                ) *
+                (
+                    .25 +
+                    config.glow / 100
+                );
+
+
+            const size =
+                this.size *
+                (
+                    1 +
+                    channel.depth
+                );
+
+
+            ctx.beginPath();
+
+
+            ctx.arc(
+                pos.x,
+                pos.y,
+                size,
+                0,
+                Math.PI * 2
+            );
+
+
+            ctx.fillStyle =
+                `rgba(
+                    130,
+                    225,
+                    255,
+                    ${alpha}
+                )`;
+
+
+            ctx.fill();
+
+        }
+
+
+        /*
+         * 核心光点
+         */
+
+        ctx.save();
+
+
+        ctx.globalAlpha =
+            .9;
+
+
+        ctx.shadowBlur =
+            config.glow *
+            .45;
+
+
+        ctx.shadowColor =
+            "rgba(100,220,255,1)";
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            point.x,
+            point.y,
+            this.size *
+            1.5,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            "#dffaff";
+
+
+        ctx.fill();
+
+
+        ctx.restore();
+
+    }
+
+}
+
+
+/* =========================================
+   创建通道
+========================================= */
+
+let channels = [];
+
+let flowParticles = [];
+
+
+function createScene() {
+
+    channels = [];
+
+    flowParticles = [];
+
+
+    for (
+        let i = 0;
+        i < config.channels;
+        i++
+    ) {
+
+        const channel =
+            new Channel(i);
+
+
+        channels.push(
+            channel
+        );
+
+
+        /*
+         * 每条通道生成多个流动粒子
+         */
+
+        for (
+            let j = 0;
+            j < config.particles;
+            j++
+        ) {
+
+            flowParticles.push(
+                new FlowParticle(
+                    channel
+                )
+            );
+
+        }
+
+    }
+
+}
+
+
+createScene();
+
+
+/* =========================================
+   星空
+========================================= */
+
+const stars = [];
+
+
+for (
+    let i = 0;
+    i < 180;
+    i++
+) {
+
+    stars.push({
+
+        x: random(0, 1),
+
+        y: random(0, 1),
+
+        size: random(.2, 1.2),
+
+        alpha: random(.05, .35)
+
+    });
+
+}
+
+
+function drawStars() {
+
+    for (
+        const star of stars
+    ) {
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            star.x * W,
+            star.y * H,
+            star.size,
+            0,
+            Math.PI * 2
+        );
+
+
+        ctx.fillStyle =
+            `rgba(
+                130,
+                200,
+                255,
+                ${star.alpha}
+            )`;
+
+
+        ctx.fill();
+
+    }
+
+}
+
+
+/* =========================================
+   动画
+========================================= */
+
+function animate() {
+
+    /*
+     * 背景
+     */
+
+    ctx.fillStyle =
+        config.background;
+
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+
+    drawStars();
+
+
+    /*
+     * 先画所有完整通道
+     */
+
+    for (
+        const channel of channels
+    ) {
+
+        channel.drawTrack();
+
+    }
+
+
+    /*
+     * 再画流动光粒子
+     */
+
+    for (
+        const particle of flowParticles
+    ) {
+
+        particle.update();
+
+        particle.draw();
+
+    }
+
+
+    requestAnimationFrame(
+        animate
+    );
+
+}
+
+
+animate();
+
+
+/* =========================================
+   UI
+========================================= */
+
+function bindRange(
+    id,
+    configName,
+    output,
+    format = v => v
+) {
+
+    const input =
+        document.getElementById(id);
+
+    const value =
+        document.getElementById(output);
+
+
+    input.addEventListener(
+        "input",
+        () => {
+
+            config[configName] =
+                Number(input.value);
+
+
+            value.textContent =
+                format(
+                    config[configName]
+                );
+
+
+            /*
+             * 某些参数需要重新生成
+             */
+
+            if (
+                configName ===
+                "channels" ||
+
+                configName ===
+                "particles"
+            ) {
+
+                createScene();
+
+            }
+
+
+            if (
+                configName ===
+                "irregular" ||
+
+                configName ===
+                "grain"
+            ) {
+
+                createScene();
+
+            }
+
+        }
+    );
+
+}
+
+
+bindRange(
+    "channel",
+    "channels",
+    "channelValue"
+);
+
+bindRange(
+    "width",
+    "width",
+    "widthValue",
+    v => Number(v).toFixed(1)
+);
+
+bindRange(
+    "irregular",
+    "irregular",
+    "irregularValue"
+);
+
+bindRange(
+    "grain",
+    "grain",
+    "grainValue"
+);
+
+bindRange(
+    "particle",
+    "particles",
+    "particleValue"
+);
+
+bindRange(
+    "speed",
+    "speed",
+    "speedValue",
+    v => Number(v).toFixed(1)
+);
+
+bindRange(
+    "trail",
+    "trail",
+    "trailValue"
+);
+
+bindRange(
+    "glow",
+    "glow",
+    "glowValue"
+);
+
+bindRange(
+    "distance",
+    "distance",
+    "distanceValue"
+);
+
+
+/* =========================================
+   方向
+========================================= */
+
+document
+    .getElementById("direction")
+    .addEventListener(
+        "change",
+        e => {
+
+            config.direction =
+                e.target.value;
+
+            createScene();
+
+        }
+    );
+
+
+/* =========================================
+   背景
+========================================= */
+
+document
+    .getElementById("background")
+    .addEventListener(
+        "input",
+        e => {
+
+            config.background =
+                e.target.value;
+
+        }
+    );
+
+
+/* =========================================
+   随机生成
+========================================= */
+
+document
+    .getElementById("random")
+    .addEventListener(
+        "click",
+        () => {
+
+            config.irregular =
+                random(20, 100);
+
+            config.grain =
+                random(10, 90);
+
+            config.speed =
+                random(.5, 3);
+
+            config.trail =
+                random(30, 180);
+
+            config.glow =
+                random(30, 100);
+
+
+            document
+                .getElementById("irregular")
+                .value =
+                config.irregular;
+
+
+            document
+                .getElementById("grain")
+                .value =
+                config.grain;
+
+
+            document
+                .getElementById("speed")
+                .value =
+                config.speed;
+
+
+            document
+                .getElementById("trail")
+                .value =
+                config.trail;
+
+
+            document
+                .getElementById("glow")
+                .value =
+                config.glow;
+
+
+            document
+                .getElementById("irregularValue")
+                .textContent =
+                Math.round(
+                    config.irregular
+                );
+
+
+            document
+                .getElementById("grainValue")
+                .textContent =
+                Math.round(
+                    config.grain
+                );
+
+
+            document
+                .getElementById("speedValue")
+                .textContent =
+                config.speed.toFixed(1);
+
+
+            document
+                .getElementById("trailValue")
+                .textContent =
+                Math.round(
+                    config.trail
+                );
+
+
+            document
+                .getElementById("glowValue")
+                .textContent =
+                Math.round(
+                    config.glow
+                );
+
+
+            createScene();
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
