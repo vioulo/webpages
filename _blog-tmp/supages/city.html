@@ -1,0 +1,783 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Xinting — 赛博城市 · 夜雨中的个人主页">
+<title>XINTING // CYBER CITY</title>
+<style>
+:root{
+  --bg:#04060c;--panel:#0a0f1c;--panel2:#0e1526;--line:#1a2440;
+  --text:#d7e3f5;--muted:#7c8db0;--cyan:#38e8ff;--pink:#ff4fa3;--violet:#a78bfa;--amber:#ffc857;
+  --mono:"JetBrains Mono","Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+  --ease:cubic-bezier(.22,1,.36,1)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);overflow-x:hidden;min-height:100vh}
+a{color:inherit}
+::-webkit-scrollbar{width:9px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--cyan),var(--violet));border-radius:6px;border:2px solid var(--bg)}
+::selection{background:rgba(56,232,255,.35);color:#fff}
+
+/* ---------- 背景层 ---------- */
+#cityCanvas{position:fixed;inset:0;z-index:0;display:block}
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(160,220,255,.028) 3px 4px);mix-blend-mode:screen}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.7) 100%)}
+
+/* ---------- 顶栏 ---------- */
+.topbar{position:fixed;z-index:30;top:14px;left:50%;transform:translateX(-50%);width:min(1120px,calc(100% - 32px));height:46px;border:1px solid var(--line);background:rgba(6,10,18,.82);display:flex;align-items:center;justify-content:space-between;padding:0 14px;backdrop-filter:blur(12px);box-shadow:0 0 24px rgba(56,232,255,.05)}
+.topbar .l{display:flex;align-items:center;gap:12px;font-size:11px}
+.pin{color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+.topnav{display:flex;gap:16px;font-size:11px}
+.topnav a{color:var(--muted);text-decoration:none;transition:color .25s,text-shadow .25s}
+.topnav a:hover{color:var(--cyan);text-shadow:0 0 10px rgba(56,232,255,.6)}
+.radar{font-size:10px;color:var(--amber);letter-spacing:1px;animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ---------- 主布局 ---------- */
+.wrap{position:relative;z-index:3;width:min(1120px,calc(100% - 40px));margin:auto}
+main{padding-top:120px}
+section{scroll-margin-top:90px;padding:64px 0}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:34px}
+.sec-head .num{color:var(--cyan);font-size:11px;border:1px solid rgba(56,232,255,.3);padding:3px 10px;background:rgba(56,232,255,.05)}
+.sec-head h2{font-size:clamp(1.3rem,3vw,1.8rem);font-weight:800;letter-spacing:1px}
+.sec-head h2 span{background:linear-gradient(115deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.sec-head .line{flex:1;height:1px;background:linear-gradient(90deg,rgba(56,232,255,.35),transparent)}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ---------- Hero ---------- */
+.hero{min-height:calc(100svh - 40px);display:grid;place-items:center;text-align:center;padding-bottom:20px}
+.kicker{font-size:10px;letter-spacing:4px;color:var(--cyan);border:1px solid rgba(56,232,255,.3);display:inline-block;padding:6px 14px;background:rgba(56,232,255,.05);margin-bottom:22px}
+.hero h1{font-size:clamp(2.8rem,9vw,5.6rem);letter-spacing:6px;font-weight:900;margin-bottom:14px;line-height:1.1;color:#fff;text-shadow:0 0 18px rgba(56,232,255,.55),0 0 60px rgba(56,232,255,.28)}
+.hero h1 em{font-style:normal;background:linear-gradient(115deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+.hero .role{font-size:12px;letter-spacing:3px;color:var(--muted);margin-bottom:18px}
+.hero .sub{max-width:620px;margin:0 auto 30px;color:#a9b9d8;font-size:13px;line-height:2}
+.hero .sub b{color:var(--cyan)}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 24px;font-size:12px;letter-spacing:1px;text-decoration:none;border:1px solid rgba(56,232,255,.35);color:var(--cyan);background:rgba(56,232,255,.06);transition:all .3s var(--ease);text-shadow:0 0 10px rgba(56,232,255,.4)}
+.btn:hover{background:rgba(56,232,255,.16);box-shadow:0 0 26px rgba(56,232,255,.3);transform:translateY(-2px)}
+.btn.alt{border-color:rgba(167,139,250,.4);color:var(--violet);background:rgba(167,139,250,.06);text-shadow:0 0 10px rgba(167,139,250,.4)}
+.btn.alt:hover{background:rgba(167,139,250,.16);box-shadow:0 0 26px rgba(167,139,250,.3)}
+.hud{display:flex;gap:22px;margin-top:36px;justify-content:center;flex-wrap:wrap;font-size:10px;color:var(--muted);letter-spacing:2px}
+.hud i{display:block;color:var(--cyan);font-style:normal;font-size:15px;margin-bottom:4px;text-shadow:0 0 8px rgba(56,232,255,.6)}
+
+/* ---------- 地图 ---------- */
+.map{position:relative;border:1px solid var(--line);background:rgba(5,8,17,.94);overflow:hidden;box-shadow:0 0 0 1px rgba(56,232,255,.03),0 24px 70px rgba(0,0,0,.4)}
+.map canvas{display:block;width:100%;height:auto}
+.map-hint{position:absolute;top:12px;right:14px;font-size:10px;letter-spacing:1px;color:var(--muted);text-align:right;pointer-events:none;line-height:1.9}
+.map-hint i{font-style:normal;color:var(--amber)}
+.map-legend{display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;font-size:10px;color:var(--muted);letter-spacing:1px}
+.map-legend i{font-style:normal;display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+.map-legend .b{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+.map-legend .a{background:var(--violet);box-shadow:0 0 8px var(--violet)}
+.map-legend .p{background:var(--pink);box-shadow:0 0 8px var(--pink)}
+
+/* 悬停信息面板 */
+.map-tip{position:absolute;z-index:5;width:236px;pointer-events:none;border:1px solid rgba(56,232,255,.4);background:rgba(6,10,18,.94);padding:12px 14px;box-shadow:0 0 30px rgba(56,232,255,.12);opacity:0;transform:translateY(6px);transition:opacity .18s var(--ease),transform .18s var(--ease)}
+.map-tip.show{opacity:1;transform:translateY(0)}
+.map-tip .k{font-size:9px;letter-spacing:2px;color:var(--cyan);margin-bottom:6px}
+.map-tip h5{font-size:13px;color:#e8efff;margin-bottom:4px}
+.map-tip p{font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:8px}
+.map-tip .meta{font-size:10px;color:var(--violet);letter-spacing:1px}
+.map-tip .go{font-size:10px;color:var(--cyan);letter-spacing:1px;display:inline-block;margin-top:2px}
+
+/* ---------- 区段卡片 ---------- */
+.district{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.zone{border:1px solid var(--line);background:var(--panel);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .3s,transform .3s var(--ease)}
+.zone:hover{border-color:rgba(167,139,250,.55);transform:translateY(-3px)}
+.zone::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--violet));opacity:0;transition:opacity .3s}
+.zone:hover::after{opacity:1}
+.zone .zt{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.zone .zt span{font-size:10px;color:var(--muted);letter-spacing:2px}
+.zone .lv{font-size:10px;color:var(--violet);border:1px solid rgba(167,139,250,.35);padding:2px 8px;background:rgba(167,139,250,.05)}
+.zone h4{font-size:13px;margin-bottom:6px;color:#e8efff}
+.zone .ld{height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;margin-bottom:8px}
+.zone .ld i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--pink));box-shadow:0 0 10px rgba(167,139,250,.7);border-radius:3px}
+.zone p{font-size:11px;color:var(--muted);line-height:1.7}
+
+/* ---------- 建筑节点（DOM 面板） ---------- */
+.bldgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:22px}
+.bldg{position:relative;display:flex;flex-direction:column;border:1px solid var(--line);background:var(--panel);padding:16px 18px 14px;text-decoration:none;overflow:hidden;transition:border-color .3s,transform .3s var(--ease),box-shadow .3s}
+.bldg:hover{border-color:rgba(56,232,255,.6);transform:translateY(-4px);box-shadow:0 0 26px rgba(56,232,255,.12)}
+.bldg::before{content:"BUILDING";position:absolute;top:10px;right:12px;font-size:9px;letter-spacing:2px;color:rgba(124,141,176,.5)}
+.bldg .bt{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.bldg .bt .ico{font-size:16px;filter:drop-shadow(0 0 8px rgba(56,232,255,.5))}
+.bldg h4{font-size:13px;color:#e8efff;letter-spacing:.5px}
+.bldg .st{margin-left:auto;font-size:9px;border:1px solid rgba(56,232,255,.3);color:var(--cyan);padding:2px 8px;background:rgba(56,232,255,.05);white-space:nowrap}
+.bldg .st.wip{border-color:rgba(255,200,87,.4);color:var(--amber);background:rgba(255,200,87,.05)}
+.bldg .st.done{border-color:rgba(79,220,150,.4);color:#4fdc96;background:rgba(79,220,150,.05)}
+.bldg p{font-size:11px;color:var(--muted);line-height:1.8;flex:1;margin-bottom:10px}
+.bldg .chips{display:flex;gap:6px;flex-wrap:wrap}
+.bldg .chips span{font-size:9px;border:1px solid var(--line);padding:2px 8px;color:#9db0d4;background:rgba(255,255,255,.02)}
+.bldg .go{margin-left:auto;font-size:10px;color:var(--cyan);letter-spacing:1px;align-self:flex-end;margin-top:10px}
+.bldg:hover .go{text-shadow:0 0 10px rgba(56,232,255,.8)}
+
+/* ---------- 线路 ---------- */
+.route{position:relative;max-width:820px;margin:auto;padding-left:26px}
+.route::before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:linear-gradient(180deg,var(--cyan),var(--violet),var(--pink),transparent);box-shadow:0 0 12px rgba(120,170,255,.5)}
+.stop{position:relative;padding-bottom:32px}
+.stop:last-child{padding-bottom:0}
+.stop::before{content:"";position:absolute;left:-26px;top:3px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:3px solid var(--cyan);box-shadow:0 0 14px rgba(56,232,255,.9)}
+.stop:nth-child(2)::before{border-color:var(--violet);box-shadow:0 0 14px rgba(167,139,250,.9)}
+.stop:nth-child(3)::before{border-color:var(--pink);box-shadow:0 0 14px rgba(255,79,163,.9)}
+.stop .yr{font-size:10px;letter-spacing:2px;color:var(--cyan);margin-bottom:6px;font-weight:700}
+.stop:nth-child(2) .yr{color:var(--violet)}
+.stop:nth-child(3) .yr{color:var(--pink)}
+.stop h4{font-size:14px;margin-bottom:6px}
+.stop p{font-size:12px;color:var(--muted);line-height:2}
+
+/* ---------- 联系 / 页脚 ---------- */
+.contact{padding-bottom:20px}
+.contact-box{text-align:center;border:1px solid rgba(56,232,255,.35);background:rgba(56,232,255,.06);padding:52px 28px;position:relative;overflow:hidden;transition:all .3s var(--ease)}
+.contact-box:hover{border-color:rgba(56,232,255,.6);background:rgba(56,232,255,.11);box-shadow:0 0 26px rgba(56,232,255,.22)}
+.contact-box::before{content:"";position:absolute;inset:-40% -20%;background:radial-gradient(circle at 50% 50%,rgba(56,232,255,.09),transparent 55%);animation:drift 12s ease-in-out infinite alternate;pointer-events:none}
+@keyframes drift{from{transform:translateY(-6%)}to{transform:translateY(6%)}}
+.contact-box h2{position:relative;font-size:clamp(1.4rem,3.4vw,2rem);margin-bottom:12px}
+.contact-box h2 span{background:linear-gradient(115deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.contact-box p{position:relative;color:var(--muted);font-size:12px;margin-bottom:26px}
+.social{position:relative;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.social a{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:11px;text-decoration:none;border:1px solid rgba(56,232,255,.35);color:var(--cyan);background:rgba(56,232,255,.06);transition:all .3s var(--ease);text-shadow:0 0 10px rgba(56,232,255,.4)}
+.social a:hover{border-color:rgba(56,232,255,.6);background:rgba(56,232,255,.16);color:var(--cyan);box-shadow:0 0 26px rgba(56,232,255,.3);transform:translateY(-2px)}
+.social a .tag{font-size:9px;color:var(--muted);letter-spacing:1px}
+footer{border-top:1px solid rgba(255,255,255,.06);padding:26px 0 34px;text-align:center;color:rgba(124,141,176,.6);font-size:10px;letter-spacing:1px}
+@media(max-width:720px){.topnav{display:none}.wrap{width:min(1120px,calc(100% - 24px))}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<canvas id="cityCanvas" aria-hidden="true"></canvas>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+
+<div class="topbar">
+  <div class="l"><span class="pin">◆</span><span>XINTING&nbsp;//&nbsp;CYBER_CITY</span></div>
+  <nav class="topnav">
+    <a href="#home">#home</a>
+    <a href="#map">#map</a>
+    <a href="#projects">#projects</a>
+    <a href="#journey">#journey</a>
+    <a href="#skills">#skills</a>
+    <a href="#contact">#contact</a>
+  </nav>
+  <span class="radar">● GRID ONLINE</span>
+</div>
+
+<main>
+  <section class="hero" id="home">
+    <div class="wrap">
+      <div class="kicker">CYBER CITY // XINTING_DISTRICT</div>
+      <h1>XINTING<br><em>CITY</em></h1>
+      <p class="role">FULL-STACK DEVELOPER · INDIE MAKER · AI EXPLORER</p>
+      <p class="sub">欢迎来到 <b>Xinting City</b> —— 一座由代码构建的赛博都市。<br>每栋建筑都是一个项目，每个街区都是一种技能，霓虹线路串起这几年的旅程。<br>夜雨不停，城市不眠。</p>
+      <div class="cta">
+        <a class="btn" href="#map">[ 打开城市地图 ]</a>
+        <a class="btn alt" href="#contact">[ 发送信号 ]</a>
+      </div>
+      <div class="hud">
+        <div><i id="hudBuildings">–</i>BUILDINGS</div>
+        <div><i id="hudSkills">–</i>DISTRICTS</div>
+        <div><i id="hudRoutes">–</i>ROUTES</div>
+        <div><i>24/7</i>RAIN</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="map">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="num">01</span>
+        <h2>city<span>_map</span></h2>
+        <i class="line"></i>
+      </div>
+      <div class="map" id="mapBox">
+        <div class="map-hint">
+          <span>悬停查看建筑 · <i>点击跳转</i></span>
+        </div>
+        <div class="map-tip" id="mapTip"></div>
+        <canvas id="mapCanvas" width="1000" height="460"></canvas>
+      </div>
+      <div class="map-legend">
+        <span><i class="b"></i>PROJECT / 建筑节点</span>
+        <span><i class="a"></i>SKILL / 技能街区</span>
+        <span><i class="p"></i>ROUTE / 旅程线路</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="num">02</span>
+        <h2>projects<span>_buildings</span></h2>
+        <i class="line"></i>
+      </div>
+      <p class="sub" style="font-size:12px;color:var(--muted);margin-bottom:20px">// 霓虹楼宇群：每一栋建筑背后，都是一个正在运行的项目</p>
+      <div class="bldgs" id="bldgs"></div>
+    </div>
+  </section>
+
+  <section id="journey">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="num">03</span>
+        <h2>journey<span>_routes</span></h2>
+        <i class="line"></i>
+      </div>
+      <p class="sub" style="font-size:12px;color:var(--muted);margin-bottom:28px">// 城市主干线：每一条霓虹线路，都是一年的坐标</p>
+      <div class="route" id="route"></div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="num">04</span>
+        <h2>skills<span>_districts</span></h2>
+        <i class="line"></i>
+      </div>
+      <p class="sub" style="font-size:12px;color:var(--muted);margin-bottom:20px">// 技能街区：等级越高的街区，霓虹越亮</p>
+      <div class="district" id="district"></div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <div class="wrap">
+      <div class="contact-box">
+        <h2>向 <span>Xinting City</span> 发送信号</h2>
+        <p>无论是技术交流、项目合作，还是单纯想聊聊代码与创造 —— 城市大门常开。</p>
+        <div class="social" id="social"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap">© 2026 XINTING // CYBER CITY — BUILT WITH CODE &amp; RAIN · <span style="color:var(--cyan)">GRID ONLINE</span></div></footer>
+
+<script src="./site.config.js"></script>
+<script>
+(function(){
+'use strict';
+var cfg = window.SITE_CONFIG;
+if (!cfg || !cfg.projects) { console.error('site.config.js 加载失败'); return; }
+var projects = cfg.projects, skills = cfg.skills, timeline = cfg.timeline;
+var esc = function(v){ return String(v).replace(/[&<>"']/g, function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];
+}); };
+var isExternal = function(url){ return /^(https?:|mailto:)/.test(url || ''); };
+
+/* ============================================================
+   0. HUD 计数（由配置驱动）
+   ============================================================ */
+document.getElementById('hudBuildings').textContent = projects.length;
+document.getElementById('hudSkills').textContent = skills.length;
+document.getElementById('hudRoutes').textContent = timeline.length;
+
+/* ============================================================
+   1. 项目建筑节点（DOM 面板）
+   ============================================================ */
+var statusClass = function(st){
+  if (/进行|开发|wip/i.test(st)) return ' wip';
+  if (/活跃|上线|done/i.test(st)) return ' done';
+  return '';
+};
+document.getElementById('bldgs').innerHTML = projects.map(function(p, i){
+  var external = isExternal(p.url);
+  var attrs = external ? ' target="_blank" rel="noopener noreferrer"' : '';
+  return '<a class="bldg reveal" href="' + esc(p.url || '#home') + '"' + attrs + ' data-i="' + i + '">'
+    + '<span class="bt"><span class="ico">' + esc(p.ico) + '</span><h4>' + esc(p.name) + '</h4>'
+    + '<span class="st' + statusClass(p.status) + '">◈ ' + esc(p.status) + '</span></span>'
+    + '<p>' + esc(p.desc) + '</p>'
+    + '<span class="chips">' + (p.stack || []).map(function(s){ return '<span>' + esc(s) + '</span>'; }).join('') + '</span>'
+    + '<span class="go">进入 &rarr;</span></a>';
+}).join('');
+
+/* ============================================================
+   2. 旅程线路
+   ============================================================ */
+document.getElementById('route').innerHTML = timeline.map(function(t){
+  return '<article class="stop reveal"><div class="yr">ROUTE_20' + esc(t.date.slice(-2)) + ' // ' + esc(t.date) + '</div>'
+    + '<h4>' + esc(t.title) + '</h4><p>' + esc(t.desc) + '</p></article>';
+}).join('');
+
+/* ============================================================
+   3. 技能街区
+   ============================================================ */
+document.getElementById('district').innerHTML = skills.map(function(s){
+  return '<div class="zone reveal"><div class="zt"><span>DISTRICT // ' + esc(s.name).toUpperCase() + '</span>'
+    + '<span class="lv">LV ' + Math.max(1, Math.round(s.pct / 10)) + '</span></div>'
+    + '<h4>' + esc(s.name) + '</h4>'
+    + '<div class="ld"><i style="width:' + s.pct + '%"></i></div>'
+    + '<p>覆盖率 ' + s.pct + '% · 全城联网 · 霓虹稳定</p></div>';
+}).join('');
+
+/* ============================================================
+   4. 联系方式
+   ============================================================ */
+document.getElementById('social').innerHTML = [
+  '<a href="mailto:hi@xinting.dev"><span class="tag">EMAIL</span>hi@xinting.dev</a>',
+  '<a href="https://github.com/xinting" target="_blank" rel="noopener noreferrer"><span class="tag">GITHUB</span>github.com/xinting</a>',
+  '<a href="#contact"><span class="tag">WECHAT</span>扫码添加</a>'
+].join('');
+
+/* ============================================================
+   5. 地图画布（俯视赛博城市，可交互）
+   坐标系统一为画布屏幕像素，保证布局确定性。
+   ============================================================ */
+(function cityMap(){
+  var mapCanvas = document.getElementById('mapCanvas');
+  var ctx = mapCanvas.getContext('2d');
+  var W = mapCanvas.width, H = mapCanvas.height;
+  var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var nodes = [];
+
+  /* 街道网格（屏幕坐标） */
+  var roads = [];
+  (function(){
+    var i, y, x;
+    for (i = 1; i < 6; i++){ y = H * i / 6; roads.push({ x1: 0, y1: y, x2: W, y2: y, w: i === 3 ? 5 : 2 }); }
+    for (i = 1; i < 10; i++){ x = W * i / 10; roads.push({ x1: x, y1: 0, x2: x, y2: H, w: (i === 5 || i === 8) ? 5 : 2 }); }
+  })();
+
+  /* 街区色块 */
+  var blocks = [
+    { x: 0.02, y: 0.16, w: 0.17, h: 0.20, c: 'rgba(56,232,255,.06)' },
+    { x: 0.22, y: 0.28, w: 0.15, h: 0.24, c: 'rgba(167,139,250,.06)' },
+    { x: 0.40, y: 0.16, w: 0.18, h: 0.18, c: 'rgba(255,79,163,.06)' },
+    { x: 0.62, y: 0.28, w: 0.16, h: 0.22, c: 'rgba(56,232,255,.05)' },
+    { x: 0.81, y: 0.16, w: 0.16, h: 0.18, c: 'rgba(167,139,250,.05)' },
+    { x: 0.10, y: 0.60, w: 0.19, h: 0.24, c: 'rgba(255,79,163,.05)' },
+    { x: 0.36, y: 0.56, w: 0.17, h: 0.26, c: 'rgba(56,232,255,.05)' },
+    { x: 0.58, y: 0.60, w: 0.18, h: 0.22, c: 'rgba(167,139,250,.05)' },
+    { x: 0.80, y: 0.56, w: 0.16, h: 0.24, c: 'rgba(56,232,255,.05)' }
+  ];
+
+  /* 楼宇配色轮 */
+  var buildingColors = ['#38e8ff', '#4fdc96', '#ffc857', '#ff4fa3', '#a78bfa', '#ff8a65'];
+
+  /* —— 生成节点 —— */
+  projects.forEach(function(p, i){
+    var m = (i + 1) / (projects.length + 1);
+    var col = (i % 2 === 0) ? 0.30 : 0.66;
+    var node = {
+      kind: 'project', ref: p,
+      x: W * (0.12 + 0.76 * m),
+      y: H * (col + (Math.random() - 0.5) * 0.06),
+      w: 44 + (i % 3) * 8,
+      d: 30 + (i % 3) * 6,
+      c: buildingColors[i % buildingColors.length]
+    };
+    nodes.push(node);
+  });
+
+  skills.forEach(function(s, i){
+    var m = (i + 1) / (skills.length + 1);
+    var node = {
+      kind: 'skill', ref: s,
+      x: W * (0.15 + 0.70 * m),
+      y: H * 0.83 + (i % 2 === 0 ? -H * 0.07 : H * 0.02),
+      r: 11 + s.pct * 0.14,
+      c: '#a78bfa'
+    };
+    nodes.push(node);
+  });
+
+  var routeStations = [];
+  timeline.forEach(function(t, i){
+    var m = (i + 1) / (timeline.length + 1);
+    var node = {
+      kind: 'route', ref: t,
+      x: W * (0.26 + 0.48 * m),
+      y: H * (0.30 + (i % 2 === 0 ? -0.10 : 0.12)),
+      r: 8,
+      c: '#ff4fa3'
+    };
+    nodes.push(node);
+    routeStations.push(node);
+  });
+
+  /* —— 节点标签 —— */
+  nodes.forEach(function(n){
+    if (n.kind === 'project') n.label = n.ref.name;
+    else if (n.kind === 'skill') n.label = n.ref.name.length > 12 ? n.ref.name.slice(0, 12) + '…' : n.ref.name;
+    else n.label = n.ref.date;
+  });
+
+  /* 确定性伪随机（窗口亮灭） */
+  var randAt = function(seed, a, b){
+    seed = (seed * 9301 + 49297) % 233280;
+    return a + (seed / 233280) * (b - a);
+  };
+
+  /* —— 绘制建筑 —— */
+  var drawBuilding = function(n, bright){
+    var x0 = n.x - n.w / 2, y0 = n.y - n.d / 2;
+    var seed = Math.round(n.x * 7 + n.y * 13);
+    // 投影
+    ctx.fillStyle = 'rgba(0,0,0,.5)';
+    ctx.fillRect(x0 + 4, y0 + 5, n.w, n.d);
+    // 楼体
+    ctx.fillStyle = 'rgba(13,20,38,.96)';
+    ctx.fillRect(x0, y0, n.w, n.d);
+    // 霓虹轮廓
+    ctx.save();
+    ctx.shadowBlur = bright ? 16 : 8;
+    ctx.shadowColor = n.c;
+    ctx.strokeStyle = n.c;
+    ctx.lineWidth = 1.4;
+    ctx.lineJoin = 'miter';
+    ctx.strokeRect(x0 + 0.7, y0 + 0.7, n.w - 1.4, n.d - 1.4);
+    ctx.restore();
+    // 窗户
+    var cols = Math.max(2, Math.round(n.w / 9));
+    var rows = Math.max(2, Math.round(n.d / 9));
+    var cw = 4, ch = 4;
+    for (var r = 0; r < rows; r++){
+      for (var c = 0; c < cols; c++){
+        if (randAt(seed + r * 31 + c * 17, 0, 1) > 0.42){
+          ctx.fillStyle = n.c;
+          ctx.globalAlpha = 0.4 + 0.5 * (0.5 + 0.5 * Math.sin((r * 2 + c) * 0.9 + (n.x + n.y) * 0.01));
+          ctx.fillRect(x0 + 5 + c * ((n.w - 10) / cols), y0 + 4 + r * ((n.d - 8) / rows), cw, ch);
+          ctx.globalAlpha = 1;
+        }
+      }
+    }
+    // 顶部光点
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = n.c;
+    ctx.fillStyle = '#dff6ff';
+    ctx.beginPath();
+    ctx.arc(n.x, n.y - n.d / 2 - 3, 2.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+
+  /* —— 绘制技能节点 —— */
+  var drawSkill = function(n, bright, pulse){
+    var pulseC = 0.5 + 0.5 * Math.sin(pulse * 1.6 + n.x);
+    ctx.save();
+    ctx.globalAlpha = 0.28 + 0.16 * pulseC;
+    var g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+    g.addColorStop(0, n.c);
+    g.addColorStop(1, 'rgba(167,139,250,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+    // 光环
+    ctx.strokeStyle = bright ? '#e4d9ff' : n.c;
+    ctx.lineWidth = bright ? 2 : 1.2;
+    ctx.globalAlpha = 0.9;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  };
+
+  /* —— 绘制旅程站点 —— */
+  var drawStation = function(n, bright){
+    var c = bright ? '#ffd0e8' : n.c;
+    ctx.save();
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = n.c;
+    ctx.strokeStyle = c;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(n.x, n.y - 8); ctx.lineTo(n.x + 8, n.y);
+    ctx.lineTo(n.x, n.y + 8); ctx.lineTo(n.x - 8, n.y);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
+  };
+
+  /* —— 静态场景 —— */
+  var renderStatic = function(){
+    // 底色
+    ctx.fillStyle = 'rgba(5,8,17,0.92)';
+    ctx.fillRect(0, 0, W, H);
+    // 街区
+    blocks.forEach(function(b){
+      ctx.fillStyle = b.c;
+      ctx.fillRect(W * b.x, H * b.y, W * b.w, H * b.h);
+    });
+    // 道路
+    roads.forEach(function(r){
+      ctx.strokeStyle = 'rgba(56,232,255,0.11)';
+      ctx.lineWidth = r.w;
+      ctx.beginPath();
+      ctx.moveTo(r.x1, r.y1);
+      ctx.lineTo(r.x2, r.y2);
+      ctx.stroke();
+    });
+    // 主路由线（粉霓虹虚线）
+    if (routeStations.length > 1){
+      ctx.save();
+      ctx.shadowBlur = 9;
+      ctx.shadowColor = 'rgba(255,79,163,.8)';
+      ctx.strokeStyle = 'rgba(255,79,163,.72)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([10, 9]);
+      ctx.beginPath();
+      routeStations.forEach(function(s, k){
+        if (k === 0) ctx.moveTo(s.x, s.y);
+        else ctx.lineTo(s.x, s.y);
+      });
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+    }
+    // 光带
+    ctx.fillStyle = 'rgba(56,232,255,.05)';
+    ctx.fillRect(0, H - 2, W, 2);
+  };
+
+  /* —— 重绘一帧（含池化动画） —— */
+  var t0 = performance.now();
+  var renderFrame = function(now){
+    var t = (now - t0) / 1000;
+    var pulse = t * 1.4;
+
+    renderStatic();
+
+    nodes.forEach(function(n){
+      var bright = n === hovered;
+      if (n.kind === 'project') drawBuilding(n, bright);
+      else if (n.kind === 'skill') drawSkill(n, bright, pulse);
+      else drawStation(n, bright);
+    });
+
+    // 标签
+    ctx.textAlign = 'center';
+    ctx.font = '11px ' + getComputedStyle(document.body).fontFamily;
+    nodes.forEach(function(n){
+      var y;
+      if (n.kind === 'project') y = n.y + n.d / 2 + 16;
+      else if (n.kind === 'skill') y = n.y + n.r + 14;
+      else y = n.y + 20;
+      ctx.fillStyle = n === hovered ? '#ffffff' : (n.kind === 'project' ? 'rgba(215,227,245,.9)' : 'rgba(124,141,176,.85)');
+      ctx.fillText(n.label, n.x, y);
+      if (n === hovered && n.kind === 'project'){
+        ctx.fillStyle = 'rgba(56,232,255,.75)';
+        ctx.fillText('点击打开 ↗', n.x, y + 13);
+      }
+    });
+  };
+
+  /* —— 拾取命中（宽范围，方便点击） —— */
+  var hitTest = function(e){
+    var rect = mapCanvas.getBoundingClientRect();
+    var cx = (e.clientX - rect.left) * (W / rect.width);
+    var cy = (e.clientY - rect.top) * (H / rect.height);
+    var i, n, pad;
+    for (i = nodes.length - 1; i >= 0; i--){
+      n = nodes[i];
+      if (n.kind === 'project') pad = Math.max(n.w, n.d) * 0.45;
+      else pad = n.r + 6;
+      if (Math.abs(cx - n.x) < pad && Math.abs(cy - n.y) < pad) return n;
+    }
+    return null;
+  };
+
+  /* —— DOM 提示面板 —— */
+  var tip = document.getElementById('mapTip');
+  var mapBox = document.getElementById('mapBox');
+  var hovered = null;
+
+  var fillTip = function(n){
+    var kindLabel, meta, body, go = '';
+    if (n.kind === 'project'){
+      kindLabel = 'BUILDING // PROJECT';
+      meta = esc(n.ref.status) + ' · ' + (n.ref.stack || []).join(' / ');
+      body = esc(n.ref.desc);
+      go = '<span class="go">点击打开 ↗</span>';
+    } else if (n.kind === 'skill'){
+      kindLabel = 'DISTRICT // SKILL';
+      meta = '覆盖率 ' + n.ref.pct + '% · LV ' + Math.max(1, Math.round(n.ref.pct / 10));
+      body = '技能街区 — 点击定位到 #skills';
+    } else {
+      kindLabel = 'ROUTE STATION // ' + esc(n.ref.date);
+      meta = '旅程站点 — 点击定位到 #journey';
+      body = esc(n.ref.desc);
+    }
+    tip.innerHTML = '<div class="k">' + kindLabel + '</div><h5>' + esc(n.ref.name) + (n.kind === 'project' ? ' ' + (n.ref.ico || '') : '') + '</h5>'
+      + (body ? '<p>' + body + '</p>' : '')
+      + '<span class="meta">' + meta + '</span>' + go;
+  };
+
+  mapCanvas.addEventListener('mousemove', function(e){
+    var n = hitTest(e);
+    hovered = n;
+    mapCanvas.style.cursor = n ? 'pointer' : 'default';
+    if (n){
+      fillTip(n);
+      tip.classList.add('show');
+      var boxR = mapBox.getBoundingClientRect();
+      var left = e.clientX - boxR.left;
+      var top = e.clientY - boxR.top;
+      var tw = 236, th = 190;
+      if (left + tw > boxR.width - 8) left = left - tw - 14;
+      if (left < 8) left = 8;
+      if (top + th > boxR.height - 8) top = top - th - 12;
+      if (top < 8) top = 8;
+      tip.style.left = left + 'px';
+      tip.style.top = top + 'px';
+    } else {
+      tip.classList.remove('show');
+    }
+  });
+  mapCanvas.addEventListener('mouseleave', function(){
+    hovered = null;
+    mapCanvas.style.cursor = 'default';
+    tip.classList.remove('show');
+  });
+  mapCanvas.addEventListener('click', function(e){
+    var n = hitTest(e);
+    if (!n) return;
+    if (n.kind === 'project' && n.ref && n.ref.url){
+      var external = isExternal(n.ref.url);
+      if (external) window.open(n.ref.url, '_blank', 'noopener,noreferrer');
+      else window.location.href = n.ref.url;
+    } else if (n.kind === 'skill'){
+      document.getElementById('skills').scrollIntoView({ behavior: 'smooth' });
+    } else if (n.kind === 'route'){
+      document.getElementById('journey').scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  renderFrame(t0);
+  if (!reduced) requestAnimationFrame(function loop(now){
+    renderFrame(now);
+    requestAnimationFrame(loop);
+  });
+})();
+
+/* ============================================================
+   6. 背景画布（动态夜雨 / 霓虹天际线剪影）
+   ============================================================ */
+(function bg(){
+  var canvas = document.getElementById('cityCanvas');
+  var ctx = canvas.getContext('2d');
+  var W, H, DPR;
+  var buildings = [], drops = [], sparks = [];
+
+  var resize = function(){
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * DPR; canvas.height = H * DPR;
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+    buildings = [];
+    var x = 0;
+    while (x < W + 20){
+      var w = 24 + Math.random() * 42;
+      var h = 70 + Math.random() * H * 0.46;
+      var hue = Math.random();
+      var c = hue < 0.25 ? 'rgba(56,232,255,' : hue < 0.5 ? 'rgba(255,79,163,'
+             : hue < 0.75 ? 'rgba(167,139,250,' : 'rgba(255,200,87,';
+      buildings.push({ x: x, w: w, h: h, c: c });
+      x += w + (5 + Math.random() * 16);
+    }
+
+    drops = [];
+    var dn = Math.floor(W / 3.2);
+    for (var i = 0; i < dn; i++){
+      drops.push({ x: Math.random() * W, y: Math.random() * H, sp: 4 + Math.random() * 5, len: 8 + Math.random() * 14 });
+    }
+
+    sparks = [];
+    var sn = Math.floor(W / 16);
+    for (i = 0; i < sn; i++){
+      sparks.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        c: Math.random() < 0.5 ? 'rgba(56,232,255,' : 'rgba(255,79,163,',
+        r: 20 + Math.random() * 20,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.0006 + Math.random() * 0.0009,
+        base: 0.35 + Math.random() * 0.35,
+        burst: Math.random() < 0.18
+      });
+    }
+  };
+
+  var draw = function(now){
+    var tick = now || performance.now();
+    // 拖影覆盖：保持原有速度与浓度，只让光点自己变柔和
+    ctx.fillStyle = 'rgba(6,9,18,0.40)';
+    ctx.fillRect(0, 0, W, H);
+
+    // 远景霓虹光点：先绘制，作为高楼背后的景深
+    // 用径向渐变实现扩散，避免大半径 shadowBlur 带来的滚动卡顿
+    sparks.forEach(function(s){
+      var wave = 0.5 + 0.5 * Math.sin(tick * s.speed + s.phase);
+      var glitch = s.burst && Math.sin(tick * 0.0012 + s.phase * 3.1) > 0.97 ? 1.3 : 1;
+      var alpha = Math.min(0.09, (0.018 + s.base * 0.032 + wave * 0.038) * glitch);
+      var radius = s.r * (1.5 + wave * 0.5);
+      var g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, radius);
+      g.addColorStop(0, s.c + (alpha * 1.15).toFixed(3) + ')');
+      g.addColorStop(0.45, s.c + (alpha * 0.42).toFixed(3) + ')');
+      g.addColorStop(1, s.c + '0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 柱状高楼：覆盖远景光点，制造前后景层次
+    buildings.forEach(function(b, i){
+      var buildingFlicker = 0.72 + 0.28 * (0.5 + 0.5 * Math.sin(tick * 0.0011 + i * 1.7));
+      ctx.fillStyle = b.c + (0.035 + buildingFlicker * 0.025).toFixed(3) + ')';
+      ctx.fillRect(b.x, H - b.h, b.w, b.h);
+      ctx.fillStyle = b.c + (0.06 + buildingFlicker * 0.06).toFixed(3) + ')';
+      ctx.fillRect(b.x, H - b.h, b.w, 2);
+    });
+
+    // 雨
+    ctx.strokeStyle = 'rgba(170,210,255,0.22)';
+    ctx.lineWidth = 1;
+    drops.forEach(function(d){
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x, d.y + d.len);
+      ctx.stroke();
+    });
+  };
+
+  var loop = function(now){
+    drops.forEach(function(d){
+      d.y += d.sp;
+      d.x -= d.sp * 0.22;
+      if (d.y > H + 20){ d.y = -24; d.x = Math.random() * W; }
+    });
+    draw(now);
+    requestAnimationFrame(loop);
+  };
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches){
+    canvas.style.display = 'none';
+    return;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+  loop();
+})();
+
+/* ============================================================
+   7. Reveal 动画
+   ============================================================ */
+var io = new IntersectionObserver(function(es){
+  es.forEach(function(e){
+    if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+})();
+</script>
+</body>
+</html>

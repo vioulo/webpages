@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Xinting 的个人主页 — 全栈开发者 / 开源爱好者 / 独立创作者 · 太空任务控制台">
+<title>XINTING · MISSION CONTROL</title>
+<style>
+/* ============================================================
+   太空任务控制台 · MISSION CONTROL
+   单文件个人主页模板：数据来自同目录 site.config.js
+============================================================ */
+:root {
+  --bg-0: #02040c;
+  --bg-1: #050a1c;
+  --panel: rgba(7, 14, 32, 0.78);
+  --panel-2: rgba(12, 22, 46, 0.6);
+  --line: rgba(92, 241, 255, 0.16);
+  --line-strong: rgba(92, 241, 255, 0.42);
+  --cy: #5cf1ff;
+  --gr: #43ffa8;
+  --am: #ffb454;
+  --vi: #b18cff;
+  --rd: #ff5d73;
+  --ink: #dbe7f7;
+  --dim: #7e90b4;
+  --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Code",
+    Consolas, "Liberation Mono", Menlo, monospace;
+  --sans: "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+    -apple-system, "Segoe UI", Roboto, sans-serif;
+  --top-h: 60px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg-0);
+  color: var(--ink);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+::selection { background: rgba(92, 241, 255, 0.35); color: #fff; }
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--cy), var(--vi));
+  border-radius: 8px;
+  border: 2px solid var(--bg-0);
+}
+
+a { color: inherit; }
+
+/* ============================================================
+   背景层：宇宙渐变 + 网格 + 扫描线 + Canvas 星空/轨道
+============================================================ */
+.bg {
+  position: fixed; inset: 0; z-index: -3;
+  background:
+    radial-gradient(70% 60% at 20% 8%, rgba(92, 241, 255, 0.08), transparent 62%),
+    radial-gradient(60% 55% at 85% 15%, rgba(177, 140, 255, 0.1), transparent 62%),
+    radial-gradient(70% 70% at 50% 115%, rgba(67, 255, 168, 0.05), transparent 65%),
+    linear-gradient(180deg, var(--bg-0), var(--bg-1) 55%, #04060f);
+}
+
+#space {
+  position: fixed; inset: 0; z-index: -2;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* 网格地台（透视） */
+.grid-floor {
+  position: fixed; left: 50%; bottom: -6vh;
+  width: 160vmax; height: 62vh;
+  transform: translateX(-50%) perspective(600px) rotateX(62deg);
+  transform-origin: 50% 0;
+  background-image:
+    linear-gradient(rgba(92, 241, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 241, 255, 0.07) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.55), transparent 88%);
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.55), transparent 88%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* 扫描线 */
+.scanlines {
+  position: fixed; inset: 0; z-index: 9990;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(92, 241, 255, 0.022) 3px 4px);
+  mix-blend-mode: screen;
+}
+
+.vignette {
+  position: fixed; inset: 0; z-index: 9991;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(1, 3, 10, 0.78) 100%);
+}
+
+/* ============================================================
+   顶栏
+=========================================================== */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+  height: var(--top-h);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+  padding: 0 clamp(16px, 4vw, 48px);
+  background: rgba(3, 7, 18, 0.8);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+}
+.topbar .brand {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.topbar .brand b {
+  color: var(--cy);
+  text-shadow: 0 0 14px rgba(92, 241, 255, 0.7);
+  font-weight: 700;
+}
+.topbar .brand .sub { color: var(--dim); font-size: 0.72rem; }
+.topbar .topnav {
+  display: flex; gap: clamp(10px, 2.4vw, 30px);
+  color: var(--dim);
+}
+.topbar .topnav a {
+  text-decoration: none;
+  position: relative;
+  padding: 4px 2px;
+  transition: color 0.25s, text-shadow 0.25s;
+}
+.topbar .topnav a:hover { color: var(--cy); text-shadow: 0 0 12px rgba(92, 241, 255, 0.6); }
+.topbar .sysclock {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--gr);
+  white-space: nowrap;
+}
+.topbar .sysclock .led { animation: blink 1.6s ease-in-out infinite; }
+@media (max-width: 720px) {
+  .topbar .topnav { display: none; }
+  .topbar .brand .sub { display: none; }
+}
+
+/* LED 灯 */
+.led {
+  display: inline-block;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 10px currentColor;
+  flex: none;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.led.on { background: var(--gr); box-shadow: 0 0 12px var(--gr); }
+
+/* ============================================================
+   布局基础
+=========================================================== */
+main { position: relative; z-index: 1; }
+
+section { position: relative; scroll-margin-top: calc(var(--top-h) + 24px); }
+
+.wrap {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.sec-head {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 40px;
+}
+.sec-head .num {
+  font-family: var(--mono);
+  color: var(--am);
+  font-size: 0.82rem;
+  letter-spacing: 2px;
+  border: 1px solid rgba(255, 180, 84, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: rgba(255, 180, 84, 0.06);
+  white-space: nowrap;
+}
+.sec-head h2 {
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+.sec-head h2 span {
+  color: var(--cy);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+.sec-head .line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--line-strong), transparent);
+}
+.sec-sub {
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+  margin-top: -26px;
+  margin-bottom: 34px;
+}
+
+/* 面板（任务舱） */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+/* 面板四角刻度 */
+.panel::before, .panel::after {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  pointer-events: none;
+  border: 2px solid var(--line-strong);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+.panel::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+.panel:hover::before, .panel:hover::after { border-color: var(--cy); }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0s);
+}
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ============================================================
+   HERO · 任务总览
+=========================================================== */
+.hero {
+  min-height: 100svh;
+  display: flex; align-items: center;
+  padding: calc(var(--top-h) + 60px) 0 40px;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 36px;
+  align-items: center;
+}
+.kicker {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 3px;
+  color: var(--cy);
+  border: 1px solid rgba(92, 241, 255, 0.35);
+  padding: 6px 14px;
+  border-radius: 4px;
+  background: rgba(92, 241, 255, 0.06);
+  margin-bottom: 26px;
+}
+.hero h1 {
+  font-size: clamp(3rem, 9vw, 6rem);
+  font-weight: 900;
+  letter-spacing: 6px;
+  line-height: 1;
+  font-family: var(--mono);
+  background: linear-gradient(110deg, #fff 0%, var(--cy) 45%, var(--vi) 90%);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 34px rgba(92, 160, 255, 0.4));
+  margin-bottom: 18px;
+}
+.hero .rolebox {
+  font-family: var(--mono);
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  color: var(--gr);
+  letter-spacing: 2px;
+  min-height: 1.7em;
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 18px;
+}
+.hero .rolebox .caret {
+  display: inline-block; width: 9px; height: 1.1em;
+  background: var(--cy);
+  animation: caret 0.9s steps(2) infinite;
+  box-shadow: 0 0 10px var(--cy);
+}
+@keyframes caret { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.hero .sub {
+  color: var(--dim);
+  line-height: 2;
+  font-size: 0.96rem;
+  max-width: 520px;
+  margin-bottom: 30px;
+}
+.hero .sub strong { color: var(--ink); }
+.hero .cta { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  letter-spacing: 1px;
+  padding: 13px 26px;
+  border-radius: 4px;
+  text-decoration: none;
+  border: 1px solid var(--line-strong);
+  transition: transform 0.25s, box-shadow 0.25s, background 0.25s, color 0.25s;
+  cursor: pointer;
+  color: var(--ink);
+}
+.btn-primary {
+  color: #03121a;
+  background: linear-gradient(120deg, var(--cy), #3fb8ff);
+  border-color: transparent;
+  box-shadow: 0 8px 28px rgba(92, 241, 255, 0.35);
+}
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 38px rgba(92, 241, 255, 0.5);
+}
+.btn-ghost { background: rgba(92, 241, 255, 0.05); }
+.btn-ghost:hover {
+  transform: translateY(-3px);
+  background: rgba(92, 241, 255, 0.12);
+  box-shadow: 0 0 24px rgba(92, 241, 255, 0.25);
+}
+
+/* 遥测面板 */
+.telemetry { padding: 24px 26px 20px; }
+.telemetry .t-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: var(--dim);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.telemetry .t-head .tag { color: var(--cy); }
+.t-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(92, 241, 255, 0.08);
+}
+.t-row .k { color: var(--dim); }
+.t-row .v { color: var(--ink); font-weight: 700; }
+.t-row .v.cy { color: var(--cy); }
+.t-row .v.gr { color: var(--gr); }
+.t-row .v.am { color: var(--am); }
+.t-row .v.vi { color: var(--vi); }
+/* 信号条 */
+.signal-wrap { padding: 12px 0 2px; }
+.signal-meta {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono); font-size: 0.74rem; letter-spacing: 1px;
+  color: var(--dim); margin-bottom: 8px;
+}
+.signal-bar {
+  height: 6px; border-radius: 3px;
+  background: rgba(92, 241, 255, 0.1);
+  overflow: hidden;
+}
+.signal-fill {
+  height: 100%; width: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--gr), var(--cy), var(--vi));
+  box-shadow: 0 0 12px rgba(92, 241, 255, 0.6);
+  transition: width 0.5s ease;
+}
+
+/* 任务状态条 */
+.status-strip {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.status-chip {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-2);
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+.status-chip b {
+  color: var(--ink);
+  font-weight: 700;
+  margin-left: auto;
+}
+.status-chip.cy b { color: var(--cy); }
+.status-chip.gr b { color: var(--gr); }
+.status-chip.vi b { color: var(--vi); }
+.status-chip.am b { color: var(--am); }
+
+/* ============================================================
+   技能 · 子系统遥测
+=========================================================== */
+.skills { padding: 90px 0 60px; }
+.skills-panel { padding: 28px 30px; }
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 34px;
+}
+.skill { margin-bottom: 4px; }
+.skill .s-head {
+  display: flex; justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+.skill .s-head .pct { color: var(--cy); font-weight: 700; }
+.skill .bar {
+  height: 6px; border-radius: 3px;
+  background: rgba(92, 241, 255, 0.1);
+  overflow: hidden;
+}
+.skill .fill {
+  height: 100%; width: 0;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--cy), var(--vi));
+  box-shadow: 0 0 12px rgba(92, 241, 255, 0.5);
+  transition: width 1.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.skills-foot {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(92, 241, 255, 0.14);
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+.skills-foot .ok { color: var(--gr); }
+
+@media (max-width: 640px) {
+  .skills-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   项目 · 在轨载荷
+=========================================================== */
+.projects { padding: 90px 0 60px; }
+.proj-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+.proj {
+  display: flex; flex-direction: column;
+  padding: 24px 24px 20px;
+  text-decoration: none;
+  color: var(--ink);
+  background: linear-gradient(165deg, rgba(15, 28, 55, 0.55), rgba(8, 15, 34, 0.75));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.35s, box-shadow 0.35s;
+}
+.proj::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(120deg, transparent 20%, rgba(92, 241, 255, 0.12) 50%, transparent 80%);
+  transform: translateX(-120%);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.proj:hover { border-color: var(--line-strong); box-shadow: 0 0 30px rgba(92, 241, 255, 0.12); transform: translateY(-5px); }
+.proj:hover::before { transform: translateX(120%); }
+.proj .p-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.proj .p-id {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: var(--am);
+}
+.proj .p-status {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 3px;
+  border: 1px solid currentColor;
+}
+.proj .p-status.s-cy { color: var(--cy); background: rgba(92, 241, 255, 0.06); }
+.proj .p-status.s-gr { color: var(--gr); background: rgba(67, 255, 168, 0.06); }
+.proj .p-status.s-am { color: var(--am); background: rgba(255, 180, 84, 0.06); }
+.proj .p-status.s-vi { color: var(--vi); background: rgba(177, 140, 255, 0.06); }
+.proj h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  letter-spacing: 0.5px;
+  display: flex; align-items: center; gap: 8px;
+}
+.proj p {
+  color: var(--dim);
+  font-size: 0.88rem;
+  line-height: 1.8;
+  margin-bottom: 16px;
+  flex: 1;
+}
+.proj .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.proj .chip {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--dim);
+  border: 1px solid rgba(92, 241, 255, 0.18);
+  padding: 3px 9px;
+  border-radius: 3px;
+  background: rgba(92, 241, 255, 0.04);
+}
+.proj .p-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px dashed rgba(92, 241, 255, 0.14);
+  margin-top: 16px;
+  padding-top: 12px;
+}
+.proj .open {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 1px;
+  color: var(--cy);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.proj:hover .open { text-shadow: 0 0 12px rgba(92, 241, 255, 0.8); }
+.proj .local {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 1px;
+  color: var(--dim);
+}
+
+/* ============================================================
+   旅程 · 发射日志
+=========================================================== */
+.log { padding: 90px 0 60px; }
+.log-list { position: relative; padding-left: 34px; }
+.log-list::before {
+  content: "";
+  position: absolute; left: 8px; top: 6px; bottom: 6px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--cy), var(--vi), var(--am), transparent);
+  box-shadow: 0 0 12px rgba(92, 241, 255, 0.35);
+}
+.log-item { position: relative; padding-bottom: 38px; }
+.log-item:last-child { padding-bottom: 0; }
+.log-item::before {
+  content: "";
+  position: absolute; left: -33px; top: 6px;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--bg-0);
+  border: 3px solid var(--cy);
+  box-shadow: 0 0 14px rgba(92, 241, 255, 0.8);
+}
+.log-item:nth-child(2)::before { border-color: var(--vi); box-shadow: 0 0 14px rgba(177, 140, 255, 0.8); }
+.log-item:nth-child(3)::before { border-color: var(--am); box-shadow: 0 0 14px rgba(255, 180, 84, 0.8); }
+.log-item .l-date {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 3px;
+  color: var(--cy);
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+.log-item:nth-child(2) .l-date { color: var(--vi); }
+.log-item:nth-child(3) .l-date { color: var(--am); }
+.log-item h3 { font-size: 1.1rem; margin-bottom: 8px; letter-spacing: 0.5px; }
+.log-item p { color: var(--dim); font-size: 0.9rem; line-height: 1.9; max-width: 760px; }
+
+/* ============================================================
+   联系 · 建立通信
+=========================================================== */
+.comm { padding: 90px 0 60px; }
+.comm-panel {
+  text-align: center;
+  padding: 54px 30px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.comm-panel::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(40% 60% at 22% 35%, rgba(92, 241, 255, 0.12), transparent 60%),
+    radial-gradient(40% 60% at 78% 65%, rgba(177, 140, 255, 0.14), transparent 60%);
+  animation: neb-drift 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes neb-drift {
+  from { opacity: 0.6; transform: scale(1); }
+  to { opacity: 1; transform: scale(1.08); }
+}
+.comm-panel > * { position: relative; z-index: 1; }
+.comm-panel .kicker { margin-bottom: 18px; }
+.comm-panel h2 {
+  font-size: clamp(1.5rem, 3.6vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+.comm-panel h2 span { color: var(--cy); }
+.comm-panel > p {
+  color: var(--dim);
+  margin-bottom: 28px;
+  font-size: 0.95rem;
+  line-height: 1.9;
+}
+.comm-links {
+  display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;
+}
+.comm-links a, .comm-links button {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--mono);
+  font-size: 0.86rem;
+  letter-spacing: 1px;
+  padding: 13px 24px;
+  border-radius: 4px;
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  background: rgba(92, 241, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  cursor: pointer;
+}
+.comm-links a:hover, .comm-links button:hover {
+  transform: translateY(-4px);
+  color: #fff;
+  border-color: var(--cy);
+  box-shadow: 0 10px 30px rgba(92, 241, 255, 0.22);
+}
+.comm-links .ico { color: var(--cy); }
+
+/* 微信对话框 */
+dialog#wxdlg {
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 0;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  max-width: min(360px, calc(100vw - 48px));
+}
+dialog#wxdlg::backdrop { background: rgba(2, 4, 12, 0.72); backdrop-filter: blur(4px); }
+dialog#wxdlg .wx-body { padding: 26px 28px; text-align: center; }
+dialog#wxdlg h3 { font-size: 1rem; letter-spacing: 2px; margin-bottom: 8px; color: var(--gr); }
+dialog#wxdlg p { color: var(--dim); font-size: 0.84rem; margin-bottom: 18px; }
+dialog#wxdlg .qr {
+  width: 168px; height: 168px;
+  margin: 0 auto 18px;
+  border: 2px dashed rgba(92, 241, 255, 0.4);
+  border-radius: 6px;
+  display: grid; place-items: center;
+  background:
+    linear-gradient(rgba(92,241,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92,241,255,0.05) 1px, transparent 1px);
+  background-size: 12px 12px;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  color: var(--dim);
+}
+dialog#wxdlg .wx-close {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  padding: 9px 22px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: rgba(92, 241, 255, 0.05);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+dialog#wxdlg .wx-close:hover { border-color: var(--cy); box-shadow: 0 0 18px rgba(92, 241, 255, 0.25); }
+
+/* ============================================================
+   页脚
+=========================================================== */
+footer {
+  border-top: 1px solid rgba(92, 241, 255, 0.1);
+  padding: 26px 0 34px;
+  text-align: center;
+  color: rgba(126, 144, 180, 0.6);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 2px;
+}
+footer .heart { color: var(--rd); text-shadow: 0 0 10px var(--rd); }
+footer #footclock { color: var(--gr); }
+
+/* 错误提示（配置缺失） */
+.err {
+  margin: 0 auto 24px;
+  max-width: 760px;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--rd);
+  border: 1px solid rgba(255, 93, 115, 0.4);
+  background: rgba(255, 93, 115, 0.08);
+  padding: 14px 18px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero { padding-top: calc(var(--top-h) + 40px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 背景层 -->
+<div class="bg" aria-hidden="true"></div>
+<canvas id="space" aria-hidden="true"></canvas>
+<div class="grid-floor" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+
+<!-- 顶栏 -->
+<header class="topbar">
+  <a class="brand" href="#status">
+    <span class="led on"></span>
+    <b>✦ XINTING</b>
+    <span class="sub">/ MISSION CONTROL</span>
+  </a>
+  <nav class="topnav">
+    <a href="#status">总览 / STATUS</a>
+    <a href="#skills">子系统 / SYSTEMS</a>
+    <a href="#projects">载荷 / PAYLOADS</a>
+    <a href="#log">日志 / FLIGHT LOG</a>
+    <a href="#comm">通信 / UPLINK</a>
+  </nav>
+  <span class="sysclock"><span class="led"></span><span id="clock">00:00:00</span></span>
+</header>
+
+<main>
+  <!-- ============ HERO · 任务总览 ============ -->
+  <section class="hero" id="status">
+    <div class="wrap">
+      <div id="cfgErr"></div>
+      <div class="hero-grid">
+        <div class="reveal in">
+          <span class="kicker"><span class="led on"></span> GROUND CONTROL · 地面站在线</span>
+          <h1>XINTING</h1>
+          <div class="rolebox"><span id="role">&gt;</span><span class="caret"></span></div>
+          <p class="sub">代码是<strong>发射指令</strong>，好奇心是<strong>推进剂</strong>。这里是 <strong>Xinting</strong> 的个人轨道舱 —— 我构建博客、工具与 AI 应用，让每个想法以恰到好处的体积<strong>进入运行轨道</strong>。</p>
+          <div class="cta">
+            <a class="btn btn-primary" href="#projects">🚀 查看在轨载荷</a>
+            <a class="btn btn-ghost" href="#comm">📡 建立通信</a>
+          </div>
+        </div>
+
+        <aside class="panel telemetry reveal in" style="--d:.15s">
+          <div class="t-head"><span class="tag">TELEMETRY</span><span>DL-01 // 下行遥测</span></div>
+          <div class="t-row"><span class="k">OPERATOR</span><span class="v cy">XINTING</span></div>
+          <div class="t-row"><span class="k">MISSION</span><span class="v gr">INDIE BUILDER</span></div>
+          <div class="t-row"><span class="k">PAYLOADS</span><span class="v am" id="tPay">0</span></div>
+          <div class="t-row"><span class="k">SUBSYSTEMS</span><span class="v vi" id="tSys">0</span></div>
+          <div class="t-row"><span class="k">LAST LOG</span><span class="v cy" id="tLog">—</span></div>
+          <div class="t-row"><span class="k">UPTIME</span><span class="v gr" id="tUp">00:00:00</span></div>
+          <div class="signal-wrap">
+            <div class="signal-meta"><span>UPLINK SIGNAL</span><span id="sigPct">100%</span></div>
+            <div class="signal-bar"><div class="signal-fill" id="sigBar"></div></div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="status-strip" id="statusStrip"></div>
+    </div>
+  </section>
+
+  <!-- ============ 技能 · 子系统遥测 ============ -->
+  <section class="skills" id="skills">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="num">01 / SYS</span>
+        <h2>子系统遥测 <span>SUBSYSTEMS</span></h2>
+        <div class="line"></div>
+      </div>
+      <p class="sec-sub">// 核心能力模块：负载均衡，随时可复用</p>
+      <div class="panel skills-panel reveal" style="--d:.05s">
+        <div class="skills-grid" id="skillGrid"></div>
+        <div class="skills-foot">
+          <span>CPU <span id="cpu">0%</span> · 状态 <span class="ok">● ALL SYSTEMS NOMINAL</span></span>
+          <span id="skillCount">MODULES: 0</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 项目 · 在轨载荷 ============ -->
+  <section class="projects" id="projects">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="num">02 / PAYLOAD</span>
+        <h2>在轨载荷 <span>PROJECTS</span></h2>
+        <div class="line"></div>
+      </div>
+      <p class="sec-sub">// 已入轨模块：点击卡片开启外部遥测连接</p>
+      <div class="proj-grid" id="projGrid"></div>
+    </div>
+  </section>
+
+  <!-- ============ 旅程 · 发射日志 ============ -->
+  <section class="log" id="log">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <span class="num">03 / LOG</span>
+        <h2>发射日志 <span>FLIGHT LOG</span></h2>
+        <div class="line"></div>
+      </div>
+      <p class="sec-sub">// 轨道变更记录：持续迭代，拒绝停泊</p>
+      <div class="log-list" id="logList"></div>
+    </div>
+  </section>
+
+  <!-- ============ 联系 · 建立通信 ============ -->
+  <section class="comm" id="comm">
+    <div class="wrap">
+      <div class="panel comm-panel reveal">
+        <span class="kicker"><span class="led on"></span> OUTBOUND CHANNEL · 上行链路开启</span>
+        <h2>就绪，等待<span>建立通信</span></h2>
+        <p>无论是技术交流、项目合作，还是单纯想聊聊代码与创造 —— 信号已就位，随时接收你的呼叫。</p>
+        <div class="comm-links">
+          <a href="mailto:hi@xinting.dev"><span class="ico">✉</span> 邮箱 · hi@xinting.dev</a>
+          <a href="https://github.com/xinting" target="_blank" rel="noopener"><span class="ico">⌘</span> GitHub</a>
+          <button type="button" id="wxBtn"><span class="ico">💬</span> 微信</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 XINTING · GROUND CONTROL STATION · <span id="payCount">0</span> MODULES IN ORBIT · 用 <span class="heart">❤</span> 与 Canvas 像素信号构建</p>
+  <p style="margin-top:6px">UTC <span id="footclock">--:--:--</span></p>
+</footer>
+
+<!-- 微信二维码对话框 -->
+<dialog id="wxdlg">
+  <div class="wx-body">
+    <h3>💬 微信 · 建立联系</h3>
+    <p>扫码添加 Xinting（二维码占位，替换为真实二维码）</p>
+    <div class="qr">WX·QR<br>PLACEHOLDER</div>
+    <button class="wx-close" type="button" id="wxClose">关闭 / CLOSE</button>
+  </div>
+</dialog>
+
+<script src="./site.config.js"></script>
+<script>
+/* ============================================================
+   数据统一从同目录 site.config.js 读取
+============================================================ */
+const CFG = window.SITE_CONFIG;
+
+if (!CFG || !Array.isArray(CFG.projects)) {
+  const box = document.getElementById("cfgErr");
+  if (box) {
+    box.className = "err";
+    box.textContent = "!! CONFIG NOT FOUND —— 请确认同目录存在 site.config.js";
+  }
+}
+
+const SKILLS = (CFG && CFG.skills) || [];
+const PROJECTS = (CFG && CFG.projects) || [];
+const TIMELINE = (CFG && CFG.timeline) || [];
+
+/* HTML 转义，防止配置内容被当作标签解析 */
+const esc = v => String(v).replace(/[&<>"']/g, c => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+}[c]));
+
+/* 项目状态 → 遥测配色 */
+const STATUS_CLASS = {
+  "进行中": "s-cy",
+  "活跃": "s-gr",
+  "探索中": "s-am",
+  "已归档": "s-vi",
+  "已完成": "s-gr",
+};
+
+/* ============================================================
+   渲染：技能 / 项目 / 日志
+============================================================ */
+function renderSkills() {
+  const box = document.getElementById("skillGrid");
+  if (!box) return;
+  box.innerHTML = SKILLS.map(s => `
+    <div class="skill">
+      <div class="s-head"><span>${esc(s.name)}</span><span class="pct">${Number(s.pct) || 0}%</span></div>
+      <div class="bar"><div class="fill" data-pct="${Number(s.pct) || 0}"></div></div>
+    </div>`).join("");
+  const foot = document.getElementById("skillCount");
+  if (foot) foot.textContent = "MODULES: " + SKILLS.length;
+  const tSys = document.getElementById("tSys");
+  if (tSys) tSys.textContent = SKILLS.length;
+}
+
+function renderProjects() {
+  const box = document.getElementById("projGrid");
+  if (!box) return;
+  box.innerHTML = PROJECTS.map((p, i) => {
+    const url = p.url || "#status";
+    const external = /^(https?:|mailto:)/i.test(url);
+    // 需求：卡片链接使用 config.projects 的 url；外部链接 target=_blank
+    const attrs = external ? ' target="_blank" rel="noopener noreferrer"' : '';
+    const stClass = STATUS_CLASS[p.status] || "s-vi";
+    return `
+      <a class="proj reveal" href="${esc(url)}"${attrs} data-i="${i}">
+        <div class="p-top">
+          <span class="p-id">PAYLOAD_${String(i + 1).padStart(2, "0")}</span>
+          <span class="p-status ${stClass}">● ${esc(p.status)}</span>
+        </div>
+        <h3>${esc(p.ico)} ${esc(p.name)}</h3>
+        <p>${esc(p.desc)}</p>
+        <div class="chips">${(p.stack || []).map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div>
+        <div class="p-foot">
+          <span class="local">MODULE // ${esc(p.name)}</span>
+          <span class="open">${external ? "开启遥测 ↗" : "舱内 · 主页"}</span>
+        </div>
+      </a>`;
+  }).join("");
+
+  // 遥测面板 / 页脚统计
+  const tPay = document.getElementById("tPay");
+  const payCount = document.getElementById("payCount");
+  if (tPay) tPay.textContent = PROJECTS.length;
+  if (payCount) payCount.textContent = PROJECTS.length;
+}
+
+function renderTimeline() {
+  const box = document.getElementById("logList");
+  if (!box) return;
+  box.innerHTML = TIMELINE.map((t, i) => `
+    <article class="log-item reveal" style="--d:${i * 0.1}s">
+      <div class="l-date">T-JUL ${esc(t.date)} // FLIGHT #${String(i + 1).padStart(2, "0")}</div>
+      <h3>${esc(t.title)}</h3>
+      <p>${esc(t.desc)}</p>
+    </article>`).join("");
+  const tLog = document.getElementById("tLog");
+  if (tLog && TIMELINE.length) tLog.textContent = TIMELINE[TIMELINE.length - 1].date;
+}
+
+function renderStatusStrip() {
+  const box = document.getElementById("statusStrip");
+  if (!box) return;
+  const lastDate = TIMELINE.length ? TIMELINE[TIMELINE.length - 1].date : "—";
+  const chips = [
+    { cls: "gr", label: "SYS STATUS", val: "NOMINAL" },
+    { cls: "cy", label: "PAYLOADS", val: PROJECTS.length + " MODULES" },
+    { cls: "vi", label: "SKILL MODULES", val: SKILLS.length },
+    { cls: "am", label: "LAST FLIGHT LOG", val: lastDate },
+  ];
+  box.innerHTML = chips.map(c => `
+    <div class="status-chip ${c.cls}">
+      <span class="led"></span>
+      <span>${c.label}</span>
+      <b>${c.val}</b>
+    </div>`).join("");
+}
+
+renderSkills();
+renderProjects();
+renderTimeline();
+renderStatusStrip();
+
+/* 技能条填充动画（滚动进入时触发） */
+function fillSkillBars() {
+  document.querySelectorAll(".skill .fill").forEach(f => {
+    f.style.width = f.dataset.pct + "%";
+  });
+}
+
+/* ============================================================
+   角色轮播
+============================================================ */
+(function roles() {
+  const el = document.getElementById("role");
+  const list = [
+    "&gt; 全栈开发者 / FULL-STACK",
+    "&gt; 开源爱好者 / OPEN SOURCE",
+    "&gt; 独立创作者 / INDIE MAKER",
+    "&gt; AI 探索者 / AI EXPLORER",
+    "&gt; 像素魔法师 / PIXEL WIZARD",
+  ];
+  if (!el) return;
+  let i = 0;
+  el.textContent = list[i];
+  setInterval(() => {
+    i = (i + 1) % list.length;
+    el.style.opacity = 0;
+    el.style.transition = "opacity .3s";
+    setTimeout(() => {
+      el.textContent = list[i];
+      el.style.opacity = 1;
+    }, 300);
+  }, 3400);
+})();
+
+/* ============================================================
+   时钟 + 遥测动态读数
+============================================================ */
+const fmt = n => String(n).padStart(2, "0");
+
+(function clock() {
+  const el = document.getElementById("clock");
+  const foot = document.getElementById("footclock");
+  function tick() {
+    const d = new Date();
+    const s = fmt(d.getHours()) + ":" + fmt(d.getMinutes()) + ":" + fmt(d.getSeconds());
+    if (el) el.textContent = s;
+    if (foot) foot.textContent = d.toISOString().slice(11, 19) + "Z";
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
+(function telemetry() {
+  const upEl = document.getElementById("tUp");
+  const cpuEl = document.getElementById("cpu");
+  const sigPct = document.getElementById("sigPct");
+  const sigBar = document.getElementById("sigBar");
+  if (!upEl) return;
+  const start = Date.now();
+  let last = 0;
+  let sig = 98;
+  function frame() {
+    const now = Date.now();
+    if (now - last > 900) {
+      last = now;
+      const s = Math.floor((now - start) / 1000);
+      upEl.textContent = fmt(Math.floor(s / 3600)) + ":" + fmt(Math.floor(s % 3600 / 60)) + ":" + fmt(s % 60);
+      sig += (Math.random() - 0.5) * 4;
+      sig = Math.min(100, Math.max(94, sig));
+      sigPct.textContent = Math.round(sig) + "%";
+      sigBar.style.width = sig + "%";
+      if (cpuEl) cpuEl.textContent = Math.round(6 + Math.random() * 14) + "%";
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+
+/* ============================================================
+   滚动显示 + 技能条填充
+============================================================ */
+(function reveal() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+  // 技能面板进入视口后填充条
+  const skillPanel = document.querySelector(".skills-panel");
+  if (skillPanel) {
+    const io2 = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) {
+          fillSkillBars();
+          io2.disconnect();
+        }
+      });
+    }, { threshold: 0.2 });
+    io2.observe(skillPanel);
+  }
+})();
+
+/* ============================================================
+   微信对话框
+============================================================ */
+(function wx() {
+  const btn = document.getElementById("wxBtn");
+  const dlg = document.getElementById("wxdlg");
+  const close = document.getElementById("wxClose");
+  if (!btn || !dlg) return;
+  btn.addEventListener("click", () => {
+    if (typeof dlg.showModal === "function") dlg.showModal();
+    else dlg.setAttribute("open", "");
+  });
+  if (close) close.addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", e => {
+    if (e.target === dlg) dlg.close();
+  });
+})();
+
+/* ============================================================
+   Canvas 星空 + 轨道扫描
+   动态星野（视差 / 鼠标偏移 / 流星）+ 行星轨道扫描环
+============================================================ */
+(function spaceCanvas() {
+  const cvs = document.getElementById("space");
+  if (!cvs) return;
+  const ctx = cvs.getContext("2d");
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) { cvs.style.display = "none"; return; }
+
+  let W = 0, H = 0, DPR = 1;
+  const stars = [];
+  const sats = [
+    { ang: 0.4, speed: 0.55, r: 0.9,  size: 2.4, hue: 190 },
+    { ang: 2.3, speed: -0.5, r: 1.05, size: 2.0, hue: 262 },
+    { ang: 4.0, speed: 0.42, r: 1.22, size: 1.6, hue: 150 },
+  ];
+  const shoot = [];
+  const mouse = { x: 0, y: 0 };
+  let started = false;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    cvs.width = W * DPR;
+    cvs.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    const n = Math.min(240, Math.round((W * H) / 6500));
+    stars.length = 0;
+    for (let i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        z: 0.25 + Math.random() * 0.75,
+        r: 0.4 + Math.random() * 1.3,
+        p: Math.random() * Math.PI * 2,
+        hue: Math.random() < 0.16 ? (Math.random() < 0.5 ? 195 : 265) : 0,
+      });
+    }
+  }
+
+  window.addEventListener("resize", resize);
+  window.addEventListener("mousemove", e => { mouse.x = e.clientX; mouse.y = e.clientY; }, { passive: true });
+  document.addEventListener("mouseleave", () => { mouse.x = 0; mouse.y = 0; });
+
+  function spawnShoot() {
+    if (shoot.length < 2 && Math.random() < 0.005) {
+      const sx = Math.random() * W;
+      const sy = Math.random() * H * 0.45;
+      const ang = Math.PI * 0.72 + Math.random() * 0.22;
+      const sp = 6 + Math.random() * 4;
+      shoot.push({ x: sx, y: sy, vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp, life: 1 });
+    }
+  }
+
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    const sy = window.scrollY || 0;
+
+    // 星空：滚动视差 + 鼠标微偏移
+    for (const s of stars) {
+      const shift = s.z * sy * 0.22;
+      let x = (s.x + mouse.x * s.z * 5 + W) % W;
+      let y = ((s.y + shift + H + 40) % (H + 40)) - 0;
+      const tw = 0.5 + 0.5 * Math.sin(t * 0.001 * s.z * 3 + s.p);
+      ctx.globalAlpha = 0.25 + 0.6 * tw;
+      ctx.fillStyle = s.hue ? "hsl(" + s.hue + ",90%,82%)" : "#cdd9ff";
+      ctx.beginPath();
+      ctx.arc(x, y, s.r * (0.6 + s.z * 0.7), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // 轨道扫描：锚定视口上半部中央，作为 hero 装饰
+    const cx = W * 0.5, cy = Math.max(120, H * 0.3);
+    if (!reduced) {
+      // 行星辉光
+      const pg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 96);
+      pg.addColorStop(0, "rgba(92,241,255,0.14)");
+      pg.addColorStop(1, "rgba(92,241,255,0)");
+      ctx.fillStyle = pg;
+      ctx.fillRect(cx - 96, cy - 96, 192, 192);
+
+      ctx.fillStyle = "#0d1b33";
+      ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(92,241,255,0.55)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, 26, 0, Math.PI * 2); ctx.stroke();
+
+      // 旋转轨道环（扫描）
+      for (let i = 0; i < 2; i++) {
+        const r = 78 + i * 52;
+        const rot = t * 0.00009 * (i ? -1 : 1) * (1 + i * 0.5);
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot);
+        ctx.strokeStyle = "rgba(92,241,255," + (0.22 - i * 0.06) + ")";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, r * 0.36, r, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        // 环上扫描节点
+        const a = t * 0.001 * (i ? -0.6 : 0.9);
+        const nx = Math.cos(a) * r * 0.36;
+        const ny = Math.sin(a) * r;
+        ctx.fillStyle = i ? "rgba(255,180,84,0.9)" : "rgba(92,241,255,0.95)";
+        ctx.beginPath(); ctx.arc(nx, ny, 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+
+      // 卫星
+      for (const s of sats) {
+        s.ang += s.speed * 0.016;
+        const x = cx + Math.cos(s.ang) * 96 * s.r;
+        const y = cy + Math.sin(s.ang) * 96 * s.r * 0.42;
+        ctx.shadowColor = "hsla(" + s.hue + ",95%,70%,0.85)";
+        ctx.shadowBlur = 7;
+        ctx.fillStyle = "hsla(" + s.hue + ",95%,76%,0.95)";
+        ctx.beginPath(); ctx.arc(x, y, s.size, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      // 流星
+      spawnShoot();
+      for (let i = shoot.length - 1; i >= 0; i--) {
+        const s = shoot[i];
+        s.x += s.vx; s.y += s.vy; s.life -= 0.012;
+        if (s.life <= 0 || s.x < -50 || s.x > W + 50 || s.y < -50 || s.y > H + 50) {
+          shoot.splice(i, 1);
+          continue;
+        }
+        const g = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * 18, s.y - s.vy * 18);
+        g.addColorStop(0, "rgba(184,232,255," + (0.85 * s.life) + ")");
+        g.addColorStop(1, "rgba(184,232,255,0)");
+        ctx.strokeStyle = g;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - s.vx * 18, s.y - s.vy * 18);
+        ctx.stroke();
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

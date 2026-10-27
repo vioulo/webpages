@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Xinting — 生物机械实验室 · Bio-Tech 个人主页">
+<title>XINTING / BIO-TECH LAB</title>
+<style>
+:root{
+  --bg:#04120b; --bg2:#071d12; --panel:rgba(15,58,37,.34); --panel2:rgba(10,40,26,.5);
+  --line:rgba(77,255,161,.16); --line2:rgba(77,255,161,.32);
+  --green:#4dffa1; --green-dim:#21a264; --green-soft:#a7ffd2;
+  --text:#dcffe9; --muted:#7fae94; --amber:#ffd27a; --cyan:#6ff2e0;
+  --glow:0 0 8px rgba(77,255,161,.45); --glow-soft:0 0 4px rgba(77,255,161,.25);
+  --max:1180px; --mono:"Courier New",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--mono);line-height:1.7;overflow-x:hidden}
+a{color:inherit}
+::selection{background:rgba(77,255,161,.35);color:#02130a}
+/* ---- overlays: grid floor, scanlines, vignette ---- */
+.grid-floor{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:
+    linear-gradient(rgba(77,255,161,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(77,255,161,.06) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:radial-gradient(ellipse 70% 60% at 50% 20%,#000 30%,transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 70% 60% at 50% 20%,#000 30%,transparent 100%)}
+.scanlines{position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.14;mix-blend-mode:screen;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,255,120,.16) 3px 4px)}
+.vignette{position:fixed;inset:0;pointer-events:none;z-index:1;box-shadow:inset 0 0 220px 40px rgba(0,0,0,.75)}
+/* ---- layout ---- */
+.wrap{width:min(var(--max),calc(100% - 48px));margin:auto;position:relative;z-index:2}
+.eyebrow{font-size:11px;letter-spacing:.22em;color:var(--green);text-transform:uppercase;font-weight:700}
+.eyebrow::before{content:"▮ ";opacity:.7}
+.eyebrow::after{content:" /";opacity:.7}
+/* ---- header / nav ---- */
+header{position:fixed;top:0;left:0;right:0;z-index:30;background:rgba(4,18,11,.82);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{height:72px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.16em;text-decoration:none;color:var(--green)}
+.brand .brand-mark{width:30px;height:30px;border:1px solid var(--green);border-radius:50%;display:grid;place-items:center;font-size:12px;box-shadow:inset var(--glow-soft),var(--glow-soft);animation:pulse 3.2s ease-in-out infinite}
+.brand small{display:block;font-size:9px;font-weight:400;color:var(--muted);letter-spacing:.28em;margin-top:2px}
+@keyframes pulse{0%,100%{box-shadow:inset var(--glow-soft),var(--glow-soft)}50%{box-shadow:inset 0 0 14px rgba(77,255,161,.5),0 0 16px rgba(77,255,161,.6)}}
+.navlinks{display:flex;gap:26px;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.navlinks a{text-decoration:none;color:var(--muted);position:relative;transition:color .25s}
+.navlinks a:hover{color:var(--green)}
+.navlinks a::after{content:"";position:absolute;left:0;right:100%;bottom:-8px;height:1px;background:var(--green);box-shadow:var(--glow-soft);transition:right .3s}
+.navlinks a:hover::after{right:0}
+.lab-status{font-size:10px;color:var(--green);letter-spacing:.2em;border:1px solid var(--line2);padding:6px 10px;display:inline-flex;gap:8px;align-items:center;background:var(--panel)}
+.lab-status i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:var(--glow);animation:blink 1.4s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.25}}
+/* ---- hero ---- */
+.hero{position:relative;min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:150px 0 110px}
+#bg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:clamp(3rem,8vw,7rem);line-height:1.04;margin:18px 0 8px;letter-spacing:.03em}
+.hero h1 .dna{display:inline-block;color:var(--green);text-shadow:0 0 18px rgba(77,255,161,.65),0 0 46px rgba(77,255,161,.3);position:relative}
+.hero h1 .dna::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:1px;background:var(--green);box-shadow:var(--glow)}
+.lead{font-size:15px;color:var(--muted);max-width:520px;margin:18px 0 34px}
+.lead strong{color:var(--green-soft);font-weight:700}
+.hero-actions{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.button{display:inline-block;padding:13px 24px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;text-decoration:none;color:#02130a;background:var(--green);border:1px solid var(--green);box-shadow:0 0 18px rgba(77,255,161,.4);transition:transform .2s,box-shadow .2s}
+.button:hover{transform:translateY(-2px);box-shadow:0 0 30px rgba(77,255,161,.7)}
+.plain-link{color:var(--green);text-decoration:none;font-size:12px;letter-spacing:.16em;text-transform:uppercase;border-bottom:1px dashed var(--line2);padding-bottom:4px;transition:color .2s}
+.plain-link:hover{color:#d7ffe9}
+/* hero specimen card */
+.specimen{background:var(--panel);border:1px solid var(--line2);padding:0;position:relative;backdrop-filter:blur(4px);box-shadow:0 0 40px rgba(25,120,75,.18)}
+.specimen-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+.specimen-body{padding:26px 22px 22px}
+.dna-wrap{display:flex;justify-content:center;padding:8px 0 2px}
+.dna-svg{width:120px;height:150px;filter:drop-shadow(0 0 6px rgba(77,255,161,.5))}
+.specimen-id{text-align:center;margin-top:6px}
+.specimen-id b{color:var(--green);font-size:22px;letter-spacing:.3em;text-shadow:var(--glow)}
+.specimen-id span{display:block;font-size:10px;color:var(--muted);letter-spacing:.3em;margin-top:4px}
+.vitals{margin:20px 0 0;border-top:1px dashed var(--line)}
+.vital{display:flex;justify-content:space-between;font-size:11px;padding:10px 2px;border-bottom:1px dashed var(--line);letter-spacing:.1em}
+.vital span:first-child{color:var(--muted)}
+.vital span:last-child{color:var(--green-soft)}
+.barcode{margin:18px 0 0;height:34px;opacity:.85;
+  background-image:repeating-linear-gradient(90deg,var(--green) 0 2px,transparent 2px 5px,var(--green) 5px 6px,transparent 6px 10px,var(--green) 10px 13px,transparent 13px 16px)}
+/* ---- sections ---- */
+.section{padding:110px 0;position:relative;border-top:1px solid var(--line)}
+.section:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--green-dim),transparent)}
+.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:40px;margin-bottom:52px}
+.section-head h2{font-size:clamp(2rem,4.6vw,3.4rem);margin:12px 0 0;letter-spacing:.02em}
+.section-head h2 em{color:var(--green);font-style:normal;text-shadow:var(--glow-soft)}
+.section-note{max-width:420px;font-size:13px;color:var(--muted);margin:0}
+.section-note::before{content:"// ";color:var(--green-dim)}
+/* about / blueprint */
+.blueprint{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:start}
+.about-copy{font-size:15px;color:#c8ecd9;background:var(--panel);border:1px solid var(--line);padding:30px 32px;position:relative}
+.about-copy::before{content:"[ SPECIMEN_ANALYSIS ]";position:absolute;top:-11px;left:16px;background:var(--bg);padding:0 8px;font-size:9px;letter-spacing:.24em;color:var(--green-dim)}
+.about-copy strong{color:var(--green);font-weight:700}
+.spec-box{border:1px solid var(--line);background:var(--panel2)}
+.spec-row{display:flex;justify-content:space-between;gap:16px;font-size:11px;letter-spacing:.14em;padding:13px 18px;border-bottom:1px solid var(--line);text-transform:uppercase}
+.spec-row:last-child{border-bottom:0}
+.spec-row span:first-child{color:var(--muted)}
+.spec-row span:last-child{color:var(--green-soft)}
+/* gallery: sample tray */
+.tray{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.sample-card{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--panel);transition:border-color .3s,box-shadow .3s,transform .3s}
+.sample-card:hover{border-color:var(--line2);box-shadow:0 0 24px rgba(77,255,161,.18);transform:translateY(-4px)}
+.sample-card img{display:block;width:100%;height:230px;object-fit:cover;opacity:.9;filter:saturate(.85)}
+.sample-card:hover img{opacity:1;filter:none}
+.sample-card .ribbon{position:absolute;top:12px;left:0;background:rgba(4,18,11,.85);padding:5px 10px;font-size:9px;letter-spacing:.26em;color:var(--green);border-right:1px solid var(--line2)}
+.sample-card .corner{position:absolute;top:12px;right:12px;width:10px;height:10px;border-top:1px solid var(--green);border-right:1px solid var(--green);opacity:.6}
+.sample-meta{padding:16px 18px 18px;border-top:1px solid var(--line)}
+.sample-meta h3{margin:6px 0;font-size:15px;letter-spacing:.06em}
+.sample-meta p{margin:0;font-size:12px;color:var(--muted)}
+/* projects: culture dishes */
+.dishes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.dish{position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);padding:22px 20px 20px;text-decoration:none;transition:transform .3s,border-color .3s,box-shadow .3s}
+.dish::before{content:"";position:absolute;inset:8px;border:1px dashed var(--line);pointer-events:none;transition:border-color .3s}
+.dish:hover{border-color:var(--green);box-shadow:0 0 28px rgba(77,255,161,.22);transform:translateY(-5px)}
+.dish:hover::before{border-color:var(--line2)}
+.dish-code{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.24em;color:var(--green-dim);margin-bottom:16px;position:relative}
+.dish-status{color:var(--amber);font-size:10px;letter-spacing:.16em}
+.dish-ico{font-size:30px;margin-bottom:12px;position:relative;filter:drop-shadow(0 0 8px rgba(77,255,161,.4))}
+.dish h3{font-size:17px;margin:0 0 10px;color:var(--green-soft);letter-spacing:.04em;position:relative}
+.dish p{font-size:12px;color:var(--muted);margin:0 0 18px;flex:1;position:relative}
+.reagents{display:flex;flex-wrap:wrap;gap:8px;position:relative}
+.reagent{font-size:9.5px;letter-spacing:.1em;padding:5px 10px;border:1px solid var(--line2);color:var(--green);text-transform:uppercase;background:rgba(77,255,161,.06)}
+.dish-arrow{position:absolute;right:20px;bottom:20px;color:var(--green);font-size:11px;opacity:0;transition:opacity .3s,transform .3s}
+.dish:hover .dish-arrow{opacity:1;transform:translateX(3px)}
+/* journey: experiment log */
+.log{display:flex;flex-direction:column;gap:0;max-width:760px}
+.log-item{position:relative;padding:0 0 44px 52px;border-left:1px solid var(--line2)}
+.log-item:last-child{padding-bottom:4px}
+.log-item::before{content:"";position:absolute;left:-5px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:var(--glow)}
+.log-item::after{content:"";position:absolute;left:-1px;top:24px;bottom:0;width:1px;background:repeating-linear-gradient(var(--line2) 0 6px,transparent 6px 12px)}
+.log-date{font-size:11px;letter-spacing:.28em;color:var(--green);margin-bottom:10px;font-weight:700}
+.log-date::before{content:"⌬ ";opacity:.8}
+.log-item h3{font-size:19px;margin:0 0 8px;color:var(--text)}
+.log-item p{margin:0;font-size:13px;color:var(--muted);max-width:600px}
+/* skills: gene expression */
+.genes{display:grid;grid-template-columns:repeat(2,1fr);gap:22px 48px}
+.gene .gene-top{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.1em;margin-bottom:8px}
+.gene .gene-top span:first-child{color:var(--text)}
+.gene .gene-top span:last-child{color:var(--green);font-weight:700}
+.gene-track{height:12px;border:1px solid var(--line2);background:rgba(8,28,18,.8);position:relative;overflow:hidden}
+.gene-track span{position:absolute;inset:0 auto 0 0;width:var(--pct);background:linear-gradient(90deg,var(--green-dim),var(--green));box-shadow:0 0 12px rgba(77,255,161,.55)}
+.gene-track span::after{content:"";position:absolute;right:0;top:0;bottom:0;width:3px;background:#fff;opacity:.7}
+.gene-code{font-size:10px;color:var(--green-dim);letter-spacing:.2em;margin-top:6px;display:block}
+/* contact */
+.contact{min-height:60vh;display:flex;flex-direction:column;justify-content:center}
+.contact h2{font-size:clamp(2.2rem,6vw,4.6rem);margin:14px 0 40px;line-height:1.1}
+.contact-info{display:flex;flex-direction:column;gap:16px;max-width:560px}
+.contact-info a{font-size:17px;color:var(--green-soft);text-decoration:none;letter-spacing:.05em;border-bottom:1px dashed var(--line2);padding:10px 4px;transition:color .2s,border-color .2s,background .2s}
+.contact-info a:hover{color:var(--green);border-color:var(--green);background:rgba(77,255,161,.05)}
+.contact-cta{margin-top:42px}
+/* footer */
+footer{border-top:1px solid var(--line);padding:30px 0;font-size:10px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+/* reveal */
+.section,.dish,.sample-card,.log-item,.gene{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+/* responsive */
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;padding-top:130px;gap:44px}
+  .specimen{max-width:460px}
+  .blueprint{grid-template-columns:1fr}
+  .tray,.dishes{grid-template-columns:repeat(2,1fr)}
+  .genes{grid-template-columns:1fr}
+  .navlinks{display:none}
+}
+@media (max-width:640px){
+  .tray,.dishes{grid-template-columns:1fr}
+  .section{padding:80px 0}
+  .section-head{flex-direction:column;align-items:flex-start;gap:16px}
+  .log-item{padding-left:36px}
+}
+</style>
+</head>
+<body>
+<div class="grid-floor"></div><div class="vignette"></div><div class="scanlines"></div>
+
+<header>
+<div class="wrap nav">
+  <a class="brand" href="#home"><span class="brand-mark">⌬</span>XINTING<small>BIO-TECH LAB / BSL-1</small></a>
+  <nav class="navlinks">
+    <a href="#about">剖面</a><a href="#gallery">样本</a><a href="#projects">培养皿</a><a href="#journey">实验日志</a><a href="#skills">基因表达</a><a href="#contact">联系</a>
+  </nav>
+  <div class="lab-status"><i></i>SYSTEM ONLINE</div>
+</div>
+</header>
+
+<main>
+<section class="hero" id="home">
+  <canvas id="bg"></canvas>
+  <div>
+    <div class="eyebrow">Independent developer · systems builder</div>
+    <h1>培育 <span class="dna">代码</span><br>点亮 <span class="dna">现实。</span></h1>
+    <p class="lead">我是 <strong>Xinting</strong>，一名全栈开发者、独立创作者和 AI 探索者。在数字培养皿里培育想法，用可靠的工程反应合成出真正有用的工具。</p>
+    <div class="hero-actions">
+      <a class="button" href="#projects">↓ 观察培养皿</a>
+      <a class="plain-link" href="#contact">建立连接 →</a>
+    </div>
+  </div>
+  <div class="specimen">
+    <div class="specimen-head"><span>SPECIMEN · XINTING</span><span>LIVE CELL</span></div>
+    <div class="specimen-body">
+      <div class="dna-wrap">
+        <svg class="dna-svg" viewBox="0 0 120 150" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#4dffa1" stroke-width="2">
+            <path d="M30 10 C60 30 60 60 30 80 C0 100 0 130 30 150" opacity=".75"/>
+            <path d="M90 10 C60 30 60 60 90 80 C120 100 120 130 90 150" opacity=".75"/>
+          </g>
+          <g stroke="#a7ffd2" stroke-width="1.6">
+            <line x1="40" y1="25" x2="80" y2="25"/>
+            <line x1="33" y1="55" x2="87" y2="55"/>
+            <line x1="40" y1="85" x2="80" y2="85"/>
+            <line x1="33" y1="115" x2="87" y2="115"/>
+            <line x1="40" y1="145" x2="80" y2="145"/>
+            <line x1="47" y1="40" x2="73" y2="40"/>
+            <line x1="47" y1="70" x2="73" y2="70"/>
+            <line x1="47" y1="100" x2="73" y2="100"/>
+            <line x1="47" y1="130" x2="73" y2="130"/>
+          </g>
+          <g fill="#4dffa1">
+            <circle cx="30" cy="10" r="3"/><circle cx="90" cy="10" r="3"/>
+            <circle cx="45" cy="30" r="2.4"/><circle cx="75" cy="30" r="2.4"/>
+            <circle cx="30" cy="55" r="3"/><circle cx="90" cy="55" r="3"/>
+            <circle cx="45" cy="80" r="2.4"/><circle cx="75" cy="80" r="2.4"/>
+            <circle cx="30" cy="105" r="3"/><circle cx="90" cy="105" r="3"/>
+            <circle cx="45" cy="130" r="2.4"/><circle cx="75" cy="130" r="2.4"/>
+            <circle cx="30" cy="150" r="3"/><circle cx="90" cy="150" r="3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="specimen-id"><b>XINTING</b><span>ID-CULTURE-001 · BUILDING SINCE 2024</span></div>
+      <div class="vitals">
+        <div class="vital"><span>ROLE</span><span>FULL-STACK / MAKER</span></div>
+        <div class="vital"><span>BASE</span><span>CHINA / REMOTE</span></div>
+        <div class="vital"><span>FOCUS</span><span>WEB · AI · TOOLS</span></div>
+        <div class="vital"><span>STATUS</span><span>AVAILABLE FOR IDEAS</span></div>
+      </div>
+      <div class="barcode"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="about"><div class="wrap">
+  <div class="section-head">
+    <div><div class="eyebrow">01 / 剖面分析</div><h2>把系统<em>拆解</em>，<br>再让它<em>生长。</em></h2></div>
+    <p class="section-note">不追逐表面的复杂。像解剖标本一样理解每一层结构，再让它们在一个自洽的生态里协同工作。</p>
+  </div>
+  <div class="blueprint">
+    <div class="about-copy">代码是我与世界对话的方式。前端负责触感，后端负责承重，数据负责把两者连接起来。<strong>我相信好的产品应该像一株稳定的培养物：</strong>结构清楚，反馈直接，在正确的条件下持续生长、经得起长时间使用。</div>
+    <div class="spec-box">
+      <div class="spec-row"><span>ROLE</span><span>FULL-STACK / MAKER</span></div>
+      <div class="spec-row"><span>BASE</span><span>CHINA / REMOTE</span></div>
+      <div class="spec-row"><span>FOCUS</span><span>WEB · AI · TOOLS</span></div>
+      <div class="spec-row"><span>STATUS</span><span>AVAILABLE FOR IDEAS</span></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="section" id="gallery"><div class="wrap">
+  <div class="section-head">
+    <div><div class="eyebrow">02 / 影像样本</div><h2>工作现场的<em>显微切片。</em></h2></div>
+    <p class="section-note">关于机械、代码、电路和长期主义的公共样本，逐格观察每一次构建。</p>
+  </div>
+  <div class="tray" id="galleryTray"></div>
+</div></section>
+
+<section class="section" id="projects"><div class="wrap">
+  <div class="section-head">
+    <div><div class="eyebrow">03 / 项目培养皿</div><h2>正在<em>培育</em>的项目。</h2></div>
+    <p class="section-note">每个项目都是一次独立培养：从接种一颗想法开始，到长出被真实使用的功能为止。</p>
+  </div>
+  <div class="dishes" id="dishGrid"></div>
+</div></section>
+
+<section class="section" id="journey"><div class="wrap">
+  <div class="section-head">
+    <div><div class="eyebrow">04 / 实验日志</div><h2>我的<em>旅程。</em></h2></div>
+    <p class="section-note">没有捷径，只有持续传代、观察、修正与再启动。</p>
+  </div>
+  <div class="log" id="journeyList"></div>
+</div></section>
+
+<section class="section" id="skills"><div class="wrap">
+  <div class="section-head">
+    <div><div class="eyebrow">05 / 基因表达</div><h2>能力<em>表达强度。</em></h2></div>
+    <p class="section-note">逐年累积的技能表达水平 —— 读数来自真实项目的持续反馈。</p>
+  </div>
+  <div class="genes" id="geneGrid"></div>
+</div></section>
+
+<section class="section contact" id="contact"><div class="wrap">
+  <div class="eyebrow">06 / 开放通道</div>
+  <h2>一起做点<br><em>会生长的东西。</em></h2>
+  <div class="contact-info">
+    <a href="mailto:hi@xinting.dev">hi@xinting.dev</a>
+    <a href="https://github.com/xinting" target="_blank" rel="noopener noreferrer">github.com/xinting</a>
+    <a href="#home">微信：扫码接入</a>
+  </div>
+  <div class="contact-cta"><a class="button" href="mailto:hi@xinting.dev">发送信号 →</a></div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span>© 2026 XINTING / BIO-TECH LAB</span><span>GENOME: CODE · PATIENCE · METAL</span></div></footer>
+
+<script src="./site.config.js"></script>
+<script>
+const config=window.SITE_CONFIG;
+const esc=(value)=>String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+const external=(url)=>/^(https?:|mailto:)/.test(url||'');
+const linkAttrs=(url)=>external(url)?' target="_blank" rel="noopener noreferrer"':'';
+
+/* gallery */
+document.querySelector('#galleryTray').innerHTML=config.gallery.map((item,i)=>`<article class="sample-card">
+  <img loading="lazy" src="${esc(item.src)}" alt="${esc(item.alt)}">
+  <span class="ribbon">SAMPLE ${String(i+1).padStart(2,'0')}</span><span class="corner"></span>
+  <div class="sample-meta"><div class="eyebrow">${esc(item.label)}</div><h3>${esc(item.title)}</h3><p>${esc(item.note)}</p></div>
+</article>`).join('');
+
+/* projects — url from config, external links open in new tab */
+document.querySelector('#dishGrid').innerHTML=config.projects.map((p,i)=>`<a class="dish" href="${esc(p.url||'#home')}"${linkAttrs(p.url)}>
+  <div class="dish-code"><span>DISH-${String(i+1).padStart(2,'0')}</span><span class="dish-status">● ${esc(p.status)}</span></div>
+  <div class="dish-ico">${esc(p.ico)}</div>
+  <h3>${esc(p.name)}</h3>
+  <p>${esc(p.desc)}</p>
+  <div class="reagents">${p.stack.map(s=>`<span class="reagent">${esc(s)}</span>`).join('')}</div>
+  <span class="dish-arrow">→ OPEN</span>
+</a>`).join('');
+
+/* journey */
+document.querySelector('#journeyList').innerHTML=config.timeline.map(t=>`<article class="log-item">
+  <div class="log-date">${esc(t.date)} / EXP LOG</div>
+  <h3>${esc(t.title)}</h3>
+  <p>${esc(t.desc)}</p>
+</article>`).join('');
+
+/* skills */
+document.querySelector('#geneGrid').innerHTML=config.skills.map((s,i)=>`<div class="gene">
+  <div class="gene-top"><span>${esc(s.name)}</span><span>${s.pct}%</span></div>
+  <div class="gene-track"><span style="--pct:${s.pct}%"></span></div>
+  <span class="gene-code">GENE-${String(i+1).padStart(2,'0')} · EXPRESSION LEVEL</span>
+</div>`).join('');
+
+/* reveal on scroll */
+const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)';observer.unobserve(e.target)}}),{threshold:.08});
+document.querySelectorAll('.section,.dish,.sample-card,.log-item,.gene').forEach((el,i)=>{el.style.transitionDelay=`${Math.min(i*.03,.3)}s`;observer.observe(el)});
+
+/* ---- Bio-Tech canvas: cell particles + neural network ---- */
+(function(){
+  const canvas=document.getElementById('bg');
+  if(!canvas||!canvas.getContext)return;
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[],mouse=null;
+  const DPR=Math.min(window.devicePixelRatio||1,2);
+  const LINK_DIST=140;
+  const rand=(a,b)=>a+Math.random()*(b-a);
+
+  function resize(){
+    const rect=canvas.parentElement.getBoundingClientRect();
+    W=rect.width;H=rect.height;
+    canvas.width=W*DPR;canvas.height=H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    spawn();
+  }
+  function spawn(){
+    const count=Math.min(70,Math.floor(W*H/22000));
+    particles=[];
+    for(let i=0;i<count;i++){
+      particles.push({
+        x:rand(0,W),y:rand(0,H),
+        vx:rand(-.25,.25),vy:rand(-.25,.25),
+        r:rand(2,6.5),   // nucleus radius
+        ph:rand(0,Math.PI*2),  // pulse phase
+        sp:rand(.012,.03)       // pulse speed
+      });
+    }
+  }
+
+  function step(){
+    ctx.clearRect(0,0,W,H);
+    // links (neural network connections)
+    for(let i=0;i<particles.length;i++){
+      const a=particles[i];
+      for(let j=i+1;j<particles.length;j++){
+        const b=particles[j];
+        const dx=a.x-b.x,dy=a.y-b.y;
+        const d=Math.hypot(dx,dy);
+        if(d<LINK_DIST){
+          const alpha=(1-d/LINK_DIST)*.34;
+          ctx.strokeStyle=`rgba(77,255,161,${alpha})`;
+          ctx.lineWidth=.7;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+        }
+      }
+      // mouse link
+      if(mouse){
+        const dm=Math.hypot(a.x-mouse.x,a.y-mouse.y);
+        if(dm<LINK_DIST*1.4){
+          const alpha=(1-dm/(LINK_DIST*1.4))*.55;
+          ctx.strokeStyle=`rgba(111,242,224,${alpha})`;
+          ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(mouse.x,mouse.y);ctx.stroke();
+        }
+      }
+    }
+    // cells
+    for(const p of particles){
+      p.x+=p.vx;p.y+=p.vy;p.ph+=p.sp;
+      if(p.x<-20)p.x=W+20;if(p.x>W+20)p.x=-20;
+      if(p.y<-20)p.y=H+20;if(p.y>H+20)p.y=-20;
+      const pulse=.5+Math.sin(p.ph)*.5;
+      // membrane ring
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*2.6+pulse,0,Math.PI*2);
+      ctx.strokeStyle=`rgba(77,255,161,${.14+pulse*.14})`;
+      ctx.lineWidth=1;ctx.stroke();
+      // glow
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*2.4);
+      g.addColorStop(0,`rgba(77,255,161,${.28+pulse*.22})`);
+      g.addColorStop(1,'rgba(77,255,161,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,p.r*2.4,0,Math.PI*2);ctx.fill();
+      // nucleus
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*.75,0,Math.PI*2);
+      ctx.fillStyle=`rgba(167,255,210,${.5+pulse*.4})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(step);
+  }
+
+  window.addEventListener('resize',resize);
+  document.querySelector('.hero').addEventListener('pointermove',e=>{
+    const rect=canvas.getBoundingClientRect();
+    mouse={x:e.clientX-rect.left,y:e.clientY-rect.top};
+  });
+  document.querySelector('.hero').addEventListener('pointerleave',()=>{mouse=null});
+  resize();step();
+})();
+</script>
+</body>
+</html>
